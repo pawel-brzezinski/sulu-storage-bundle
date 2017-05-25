@@ -1,0 +1,3 @@
+#pb_sulu_storage_homepage:
+#    path:     /
+#    defaults: { _controller: PBSuluStorageBundle:Default:index }
