@@ -2,6 +2,7 @@
 
 namespace PB\Bundle\SuluStorageBundle\DependencyInjection;
 
+use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
@@ -20,10 +21,36 @@ class Configuration implements ConfigurationInterface
         $treeBuilder = new TreeBuilder();
         $rootNode = $treeBuilder->root('pb_sulu_storage');
 
-        // Here you should define the parameters that are allowed to
-        // configure your bundle. See the documentation linked above for
-        // more information on that topic.
+        $this->setFilesystemConfiguration($rootNode);
 
         return $treeBuilder;
+    }
+
+    /**
+     * Set filesystem configuration
+     *
+     * @param ArrayNodeDefinition $rootNode
+     *
+     * @return $this
+     */
+    public function setFilesystemConfiguration(ArrayNodeDefinition $rootNode)
+    {
+        $rootNode
+            ->children()
+
+                ->arrayNode('filesystems')
+                    ->info('The names of Flysystem Sulu Storage filesystems.')
+                    ->prototype('scalar')->end()
+                ->end()
+            ->end()
+            ->validate()
+                ->ifTrue(function($v) {
+                    return !isset($v['filesystems']) || !is_array($v['filesystems']) || empty($v['filesystems']);
+                })
+                ->thenInvalid('Minimum one filesystem should be defined for PBSuluStorageBundle')
+            ->end()
+        ;
+
+        return $this;
     }
 }

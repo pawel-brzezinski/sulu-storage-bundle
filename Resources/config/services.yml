@@ -1,4 +1,4 @@
 services:
-#    pb_sulu_storage.example:
-#        class: PB\Bundle\SuluStorageBundle\Example
-#        arguments: ["@service_id", "plain_value", "%parameter%"]
+    # Implementation of Sulu storage instance
+    pb_sulu_storage.storage:
+        class: PB\Bundle\SuluStorageBundle\Storage\PBStorage
