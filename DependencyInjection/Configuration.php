@@ -37,17 +37,35 @@ class Configuration implements ConfigurationInterface
     {
         $rootNode
             ->children()
-
-                ->arrayNode('filesystems')
-                    ->info('The names of Flysystem Sulu Storage filesystems.')
-                    ->prototype('scalar')->end()
+                ->arrayNode('master')
+                    ->info('The master storage filesystem.')
+                    ->addDefaultsIfNotSet()
+                    ->children()
+                        ->scalarNode('filesystem')
+                            ->isRequired()
+                            ->cannotBeEmpty()
+                        ->end()
+                        ->scalarNode('segments')
+                            ->cannotBeEmpty()
+                            ->defaultValue(10)
+                        ->end()
+                    ->end()
+                ->end()
+                ->arrayNode('replica')
+                    ->info('The replication storage filesystem.')
+                    ->children()
+                        ->scalarNode('filesystem')
+                            ->isRequired()
+                            ->cannotBeEmpty()
+                        ->end()
+                    ->end()
                 ->end()
             ->end()
             ->validate()
                 ->ifTrue(function($v) {
-                    return !isset($v['filesystems']) || !is_array($v['filesystems']) || empty($v['filesystems']);
+                    return !isset($v['master']) || !isset($v['master']['filesystem']) || !$v['master']['filesystem'];
                 })
-                ->thenInvalid('Minimum one filesystem should be defined for PBSuluStorageBundle')
+                ->thenInvalid('Master storage filesystem must be defined.')
             ->end()
         ;
 

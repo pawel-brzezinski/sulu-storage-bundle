@@ -21,7 +21,7 @@ class PBSuluStorageExtension extends Extension
     {
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
-        $this->manageFilesystemsConfig($container, $config['filesystems']);
+        $this->manageFilesystemsConfig($container, $config);
 
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.yml');
@@ -36,7 +36,11 @@ class PBSuluStorageExtension extends Extension
      */
     public function manageFilesystemsConfig(ContainerBuilder $container, array $config)
     {
-        $container->setParameter('pb_sulu_storage.filesystem.names', $config);
+        $container->setParameter('pb_sulu_storage.master', $config['master']);
+
+        if (isset($config['replica'])) {
+            $container->setParameter('pb_sulu_storage.replica', $config['replica']);
+        }
 
         return $this;
     }
