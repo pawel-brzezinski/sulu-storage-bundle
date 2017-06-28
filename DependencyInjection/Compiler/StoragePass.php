@@ -3,7 +3,11 @@
 namespace PB\Bundle\SuluStorageBundle\DependencyInjection\Compiler;
 
 use League\Flysystem\FilesystemNotFoundException;
-use Sulu\Bundle\MediaBundle\Media\Manager\MediaManager;
+use PB\Bundle\SuluStorageBundle\Exception\AliasNotFoundException;
+use PB\Bundle\SuluStorageBundle\Exception\MasterConfigNotFoundException;
+use PB\Bundle\SuluStorageBundle\FormatCache\PBFormatCache;
+use PB\Bundle\SuluStorageBundle\Manager\PBStorageManager;
+use PB\Bundle\SuluStorageBundle\Storage\PBStorage;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -17,129 +21,199 @@ use Symfony\Component\DependencyInjection\Reference;
 class StoragePass implements CompilerPassInterface
 {
     /**
+     * @var array
+     */
+    protected $masterConfig;
+
+    /**
+     * @var array
+     */
+    protected $replicaConfig;
+
+    /**
+     * @var array
+     */
+    protected $formatCacheConfig;
+
+    /**
+     * @var array
+     */
+    protected $extUrlResolvers = [];
+
+    /**
      * {@inheritdoc}
      *
      * @param ContainerBuilder $container
      */
     public function process(ContainerBuilder $container)
     {
-        if (!$container->hasParameter('pb_sulu_storage.master') ||
-            !$container->has('pb_sulu_storage.storage')
-        ) {
+        if (!$container->hasParameter('pb_sulu_storage.master')) {
             return;
         }
 
-        $this->defineStorageService($container);
+        // Find storage config
+        $this->findStorageConfig($container, 'master');
+        $this->findStorageConfig($container, 'replica');
+        $this->findStorageConfig($container, 'format_cache');
+
+        // Return exception if master storage config not found
+        if ($this->masterConfig === null) {
+            throw new MasterConfigNotFoundException('Config for master storage cannot be found.');
+        }
+
+        // Find external url resolvers services
+        $this->findExternalUrlResolvers($container);
+
+        // Set PBStorage format cache as Sulu Media Local Format Cache
+        $this->overloadSuluMediaFormatCache($container);
 
         // Set PBStorage as Sulu Media Storage
-        $this->overloadSuluMediaManager($container);
+        $this->overloadSuluMediaStorage($container);
     }
 
     /**
-     * Define PB storage service.
+     * Find storage config.
      *
      * @param ContainerBuilder $container
+     * @param string $type      master||replica
      *
      * @return $this
      */
-    protected function defineStorageService(ContainerBuilder $container)
-    {
-        $this->setStorageFilesystem($container, 'master');
-        $this->setStorageFilesystem($container, 'replica');
-
-        return $this;
-    }
-
-    /**
-     * Set storage filesystem.
-     *
-     * @param ContainerBuilder $container
-     * @param string $type          master||replica
-     *
-     * @return $this
-     */
-    protected function setStorageFilesystem(ContainerBuilder $container, $type = 'master')
+    protected function findStorageConfig(ContainerBuilder $container, $type)
     {
         if (!$container->hasParameter('pb_sulu_storage.' . $type)) {
             return $this;
         }
 
-        $config = $container->getParameter('pb_sulu_storage.' . $type);
+        $configName = $type . 'Config';
+        $this->{$configName} = $container->getParameter('pb_sulu_storage.' . $type);
+
+        return $this;
+    }
+
+    /**
+     * Find external url resolvers.
+     *
+     * @param ContainerBuilder $container
+     *
+     * @return $this
+     */
+    protected function findExternalUrlResolvers(ContainerBuilder $container)
+    {
+        $tag = 'pb_sulu_storage.external_url_resolver';
+        $taggedServices = $container->findTaggedServiceIds($tag);
+
+        foreach ($taggedServices as $id => $tags) {
+            foreach ($tags as $attributes) {
+                if (!isset($attributes['alias']) || !$attributes['alias']) {
+                    throw new AliasNotFoundException($tag);
+                }
+
+                $this->extUrlResolvers[$attributes['alias']] = $id;
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Overload sulu_media.format_cache service.
+     *
+     * @param ContainerBuilder $container
+     *
+     * @return $this
+     */
+    protected function overloadSuluMediaFormatCache(ContainerBuilder $container)
+    {
+        $storageDef = $container->getDefinition('sulu_media.format_cache');
+        $storageDef->setClass(PBFormatCache::class);
+
+        $storageManager = $this->generateStorageFilesystemManager($container, 'format_cache');
+
+        if (!$storageManager) {
+            throw new MasterConfigNotFoundException('Config for format cache media storage cannot be found.');
+        }
+
+        $storageDef->setArguments([
+            $storageManager,
+            $container->getParameter('sulu_media.image.formats'),
+            $container->getParameter('sulu_media.format_cache.media_proxy_path')
+        ]);
+        $storageDef->addTag('sulu_media.format_cache', ['alias' => 'pb']);
+
+        return $this;
+    }
+
+    /**
+     * Overload sulu_media.storage service.
+     *
+     * @param ContainerBuilder $container
+     *
+     * @return $this
+     */
+    protected function overloadSuluMediaStorage(ContainerBuilder $container)
+    {
+        $storageDef = $container->getDefinition('sulu_media.storage');
+        $storageDef->setClass(PBStorage::class);
+
+        $masterStorageManager = $this->generateStorageFilesystemManager($container, 'master');
+
+        if (!$masterStorageManager) {
+            throw new MasterConfigNotFoundException('Config for master storage cannot be found.');
+        }
+
+        $replicaStorageManager = $this->generateStorageFilesystemManager($container, 'replica');
+
+        $storageDef->setArguments([$masterStorageManager, $replicaStorageManager]);
+
+        return $this;
+    }
+
+    /**
+     * Generate storage filesystem manager.
+     *
+     * @param ContainerBuilder $container
+     * @param string $type
+     *
+     * @return null|Definition
+     */
+    protected function generateStorageFilesystemManager(
+        ContainerBuilder $container,
+        $type = 'master'
+    ) {
+        $configName = $type . 'Config';
+
+        if (!$this->{$configName}) {
+            return null;
+        }
+
+        $config = $this->{$configName};
         $fsServiceName = 'oneup_flysystem.' . $config['filesystem'] . '_filesystem';
 
         if (!$container->has($fsServiceName)) {
             throw new FilesystemNotFoundException(sprintf('Filesystem with name "%s" not found.', $config['filesystem']));
         }
 
-        $storageDef = $container->findDefinition('pb_sulu_storage.storage');
+        $extUrlResolverName = $this->findExternalUrlResolverServiceNameForFilesystem($config['type']);
 
-        switch ($type) {
-            case 'replica':
-                $methodCallName = 'setReplicaFilesystem';
-                break;
-            case 'master':
-            default:
-                $methodCallName = 'setMasterFilesystem';
-                $storageDef->addMethodCall('setSegments', [$config['segments']]);
-        }
+        $managerDef = new Definition(PBStorageManager::class, [
+            new Reference($fsServiceName),
+            $extUrlResolverName ? new Reference($extUrlResolverName) : null,
+            isset($config['segments']) ? $config['segments'] : null,
+        ]);
 
-        $storageDef->addMethodCall($methodCallName, [new Reference($fsServiceName)]);
-
-        return $this;
+        return $managerDef;
     }
 
     /**
-     * Overload SuluMediaManager to use PBSuluStorageBundle Storage and Format Cache
+     * Find external url resolver service name for filesystem type.
      *
-     * @param ContainerBuilder $container
+     * @param $fsType
      *
-     * @return $this
+     * @return string|null
      */
-    protected function overloadSuluMediaManager(ContainerBuilder $container)
+    protected function findExternalUrlResolverServiceNameForFilesystem($fsType)
     {
-        $managerDef = $container->getDefinition('sulu_media.media_manager');
-        $managerDef->setArguments([
-            new Reference('sulu.repository.media'),
-            new Reference('sulu_media.collection_repository'),
-            new Reference('sulu.repository.user'),
-            new Reference('sulu.repository.category'),
-            new Reference('doctrine.orm.entity_manager'),
-            new Reference('pb_sulu_storage.storage'),
-            new Reference('sulu_media.file_validator'),
-            new Reference('sulu_media.format_manager'),
-            new Reference('sulu_tag.tag_manager'),
-            new Reference('sulu_media.type_manager'),
-            new Reference('sulu.content.path_cleaner'),
-            new Reference('security.token_storage', ContainerBuilder::NULL_ON_INVALID_REFERENCE),
-            new Reference('sulu_security.security_checker', ContainerBuilder::NULL_ON_INVALID_REFERENCE),
-            new Reference('dubture_ffmpeg.ffprobe'),
-            $container->getParameter('sulu_security.permissions'),
-            $container->getParameter('sulu_media.media_manager.media_download_path'),
-            $container->getParameter('sulu_media.media.max_file_size'),
-        ]);
-
-        return $this;
-
-//        var_dump('overload');exit;
-
-//        <service id="sulu_media.media_manager" class="%sulu_media.media_manager.class%">
-//            <argument type="service" id="sulu.repository.media" />
-//            <argument type="service" id="sulu_media.collection_repository" />
-//            <argument type="service" id="sulu.repository.user" />
-//            <argument type="service" id="sulu.repository.category"/>
-//            <argument type="service" id="doctrine.orm.entity_manager" />
-//            <argument type="service" id="sulu_media.storage" />
-//            <argument type="service" id="sulu_media.file_validator" />
-//            <argument type="service" id="sulu_media.format_manager" />
-//            <argument type="service" id="sulu_tag.tag_manager" />
-//            <argument type="service" id="sulu_media.type_manager" />
-//            <argument type="service" id="sulu.content.path_cleaner" />
-//            <argument type="service" id="security.token_storage" on-invalid="null" />
-//            <argument type="service" id="sulu_security.security_checker" on-invalid="null" />
-//            <argument type="service" id="dubture_ffmpeg.ffprobe" />
-//            <argument>%sulu_security.permissions%</argument>
-//            <argument type="string">%sulu_media.media_manager.media_download_path%</argument>
-//            <argument>%sulu_media.media.max_file_size%</argument>
-//        </service>
+        return isset($this->extUrlResolvers[$fsType]) ? $this->extUrlResolvers[$fsType] : null;
     }
 }

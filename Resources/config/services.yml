@@ -1,4 +1,6 @@
 services:
-    # Implementation of Sulu storage instance
-    pb_sulu_storage.storage:
-        class: PB\Bundle\SuluStorageBundle\Storage\PBStorage
+    # External URL resolvers
+    pb_sulu_storage.s3.external_url_resolver:
+        class: PB\Bundle\SuluStorageBundle\Resolver\AwsS3v3ExternalUrlResolver
+        tags:
+            - { name: pb_sulu_storage.external_url_resolver, alias: awss3v3 }

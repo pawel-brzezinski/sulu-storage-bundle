@@ -3,41 +3,39 @@
 namespace PB\Bundle\SuluStorageBundle\Storage;
 
 use League\Flysystem\Filesystem;
+use PB\Bundle\SuluStorageBundle\Manager\PBStorageManager;
+use Sulu\Bundle\MediaBundle\Media\Exception\ImageProxyMediaNotFoundException;
 use Sulu\Bundle\MediaBundle\Media\Storage\StorageInterface;
 
-class PBStorage implements StorageInterface
+/**
+ * Sulu media storage based on Flysystem
+ *
+ * @author Pawel Brzezinski <pawel.brzezinski@smartint.pl>
+ */
+class PBStorage implements StorageInterface, PBStorageInterface
 {
     /**
-     * @var Filesystem
+     * @var PBStorageManager
      */
-    protected $masterFilesystem;
+    protected $masterManager;
 
     /**
-     * @var Filesystem
+     * @var PBStorageManager
      */
-    protected $replicaFilesystem;
+    protected $replicaManager;
 
     /**
-     * @var int
+     * PBStorage constructor.
+     *
+     * @param PBStorageManager $masterManager
+     * @param PBStorageManager|null $replicaManager
      */
-    protected $segments = 10;
-
-    public function setMasterFilesystem(Filesystem $filesystem)
-    {
-        $this->masterFilesystem = $filesystem;
-        return $this;
-    }
-
-    public function setReplicaFilesystem(Filesystem $filesystem)
-    {
-        $this->replicaFilesystem = $filesystem;
-        return $this;
-    }
-
-    public function setSegments($segments)
-    {
-        $this->segments = (int) $segments;
-        return $this;
+    public function __construct(
+        PBStorageManager $masterManager,
+        PBStorageManager $replicaManager = null
+    ) {
+        $this->masterManager = $masterManager;
+        $this->replicaManager = $replicaManager;
     }
 
     /**
@@ -53,13 +51,13 @@ class PBStorage implements StorageInterface
     public function save($tempPath, $fileName, $version, $storageOption = null)
     {
         $storageOption = $storageOption ? json_decode($storageOption) : new \stdClass();
-        $segment = isset($storageOption->segment) ? $storageOption->segment : $this->generateSegment($this->segments);
-        $fileName = $this->generateUniqueFileName($this->masterFilesystem, $fileName, $segment);
+        $segment = isset($storageOption->segment) ? $storageOption->segment : $this->masterManager->generateSegment();
+        $fileName = $this->masterManager->generateUniqueFileName($fileName, $segment);
 
-        $masterResult = $this->doSave($this->masterFilesystem, $tempPath, $fileName, $segment, $storageOption);
+        $masterResult = $this->doSave($this->masterManager->getFilesystem(), $tempPath, $fileName, $segment, $storageOption);
 
-        if ($this->replicaFilesystem instanceof Filesystem) {
-            $this->doSave($this->replicaFilesystem, $tempPath, $fileName, $segment, $storageOption);
+        if ($this->replicaManager instanceof PBStorageManager) {
+            $this->doSave($this->replicaManager->getFilesystem(), $tempPath, $fileName, $segment, $storageOption);
         }
 
         return $masterResult;
@@ -67,59 +65,97 @@ class PBStorage implements StorageInterface
 
     /**
      * {@inheritdoc}
-     *
-     * @param $fileName
-     * @param $version
-     * @param $storageOption
-     *
-     * @return string
-     *
-     * @deprecated Deprecated since 1.4, will be removed in 2.0
      */
     public function load($fileName, $version, $storageOption)
     {
-        print_r('pbstorage load');exit;
-        // TODO: Implement load() method.
+        throw new \RuntimeException('The \'load\' method is not supported by PBSuluStorageBundle.');
     }
 
     /**
      * {@inheritdoc}
-     *
-     * @param $fileName
-     * @param $version
-     * @param $storageOption
-     *
-     * @return string
      */
     public function loadAsString($fileName, $version, $storageOption)
     {
-        print_r('pbstorage loadAsString');exit;
-        // TODO: Implement loadAsString() method.
+        $storageOption = $storageOption ? json_decode($storageOption) : new \stdClass();
+        $segment = isset($storageOption->segment) ? $storageOption->segment : null;
+        $filePath = $this->masterManager->getFilePath($fileName, $segment);
+
+        if (!$this->masterManager->getFilesystem()->has($filePath)) {
+            throw new ImageProxyMediaNotFoundException(sprintf('Original media at path "%s" not found', $filePath));
+        }
+
+        return $this->masterManager->getFilesystem()->read($filePath);
     }
 
     /**
      * {@inheritdoc}
      *
-     * @param $storageOption
+     * @param string $storageOption
      *
-     * @return mixed
+     * @return bool
      */
     public function remove($storageOption)
     {
-        print_r('pbstorage remove');exit;
-        // TODO: Implement remove() method.
+        $storageOption = $storageOption ? json_decode($storageOption) : new \stdClass();
+
+        if (!isset($storageOption->segment) || !$storageOption->segment) {
+            return false;
+        }
+
+        $segment = isset($storageOption->segment) ? $storageOption->segment : null;
+        $filePath = $this->masterManager->getFilePath($storageOption->fileName, $segment);
+
+        if (!$this->masterManager->getFilesystem()->has($filePath)) {
+            return false;
+        }
+
+        $status = $this->masterManager->getFilesystem()->delete($filePath);
+
+        if ($this->replicaManager instanceof PBStorageManager &&
+            $this->replicaManager->getFilesystem()->has($filePath)
+        ) {
+            $this->replicaManager->getFilesystem()->delete($filePath);
+        }
+
+        return $status;
     }
 
     /**
-     * Generate segment value.
+     * {@inheritdoc}
      *
-     * @param int $segments
+     * @param string $fileName
+     * @param null|string $storageOption
      *
-     * @return string
+     * @return null|string
      */
-    protected function generateSegment($segments)
+    public function getMediaUrl($fileName, $storageOption = null)
     {
-        return sprintf('%0' . strlen($segments) . 'd', rand(1, $segments));
+        $storageOption = $storageOption ? json_decode($storageOption) : new \stdClass();
+        $segment = isset($storageOption->segment) ? $storageOption->segment : null;
+        $filePath = $this->masterManager->getFilePath($fileName, $segment);
+
+        return $this->masterManager->getUrl($filePath);
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @param string $fileName
+     * @param null|string $storageOption
+     *
+     * @return null|false|resource
+     */
+    public function loadStream($fileName, $storageOption = null)
+    {
+        $storageOption = $storageOption ? json_decode($storageOption) : new \stdClass();
+        $segment = isset($storageOption->segment) ? $storageOption->segment : null;
+        $filePath = $this->masterManager->getFilePath($fileName, $segment);
+
+        if (!$this->masterManager->getFilesystem()->has($filePath)) {
+            return null;
+        }
+
+        return $this->masterManager->getFilesystem()->readStream($filePath);
     }
 
     /**
@@ -143,38 +179,5 @@ class PBStorage implements StorageInterface
             'segment' => $segment,
             'fileName' => $fileName,
         ]);
-    }
-
-    /**
-     * Generate unique filename in filesystem path.
-     * This method is based on original getUniqueFileName() method from Sulu LocalStorage class.
-     *
-     * @param Filesystem $filesystem
-     * @param string $fileName
-     * @param string|null $folder
-     * @param int $counter
-     *
-     * @return string
-     */
-    protected function generateUniqueFileName(Filesystem $filesystem, $fileName, $folder = null, $counter = 0)
-    {
-        $newFileName = $fileName;
-
-        if ($counter > 0) {
-            $fileNameParts = explode('.', $fileName, 2);
-            $newFileName = $fileNameParts[0] . '-' . $counter;
-
-            if (isset($fileNameParts[1])) {
-                $newFileName .= '.' . $fileNameParts[1];
-            }
-        }
-
-        $filePath = rtrim($folder, '/') . '/' . $newFileName;
-
-        if (!$filesystem->has($filePath)) {
-            return $newFileName;
-        }
-
-        return $this->generateUniqueFileName($filesystem, $fileName, $folder, $counter + 1);
     }
 }

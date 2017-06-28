@@ -48,6 +48,11 @@ class BinaryStreamResponse extends Response
     protected $size;
 
     /**
+     * @var bool
+     */
+    protected $deleteFileAfterSend = false;
+
+    /**
      * BinaryStreamResponse constructor.
      *
      * @param mixed|resource $stream
@@ -227,7 +232,7 @@ class BinaryStreamResponse extends Response
         fclose($out);
         fclose($this->stream);
 
-        if (isset($this->streamMetaData['uri']) && $this->streamMetaData['uri']) {
+        if ($this->deleteFileAfterSend && isset($this->streamMetaData['uri']) && $this->streamMetaData['uri']) {
             unlink($this->streamMetaData['uri']);
         }
 

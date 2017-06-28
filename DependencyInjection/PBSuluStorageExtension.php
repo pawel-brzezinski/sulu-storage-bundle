@@ -37,6 +37,7 @@ class PBSuluStorageExtension extends Extension
     public function manageFilesystemsConfig(ContainerBuilder $container, array $config)
     {
         $container->setParameter('pb_sulu_storage.master', $config['master']);
+        $container->setParameter('pb_sulu_storage.format_cache', $config['format_cache']);
 
         if (isset($config['replica'])) {
             $container->setParameter('pb_sulu_storage.replica', $config['replica']);

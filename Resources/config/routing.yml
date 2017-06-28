@@ -1,3 +1,8 @@
-#pb_sulu_storage_homepage:
-#    path:     /
-#    defaults: { _controller: PBSuluStorageBundle:Default:index }
+# Simple overwrite standard Sulu download path
+pb_sulu_storage.website.media.download:
+    path: "%sulu_media.media_manager.media_download_path%"
+    defaults:
+        _controller: PBSuluStorageBundle:MediaStream:download
+        _requestAnalyzer: false
+    requirements:
+        slug: .*
