@@ -1,0 +1,11 @@
+# Composer files
+/composer.lock
+
+# Vendors
+/vendor
+
+# Cache
+/Tests/app/cache
+
+# Logs
+/Tests/app/logs

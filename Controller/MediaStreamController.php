@@ -39,6 +39,8 @@ class MediaStreamController extends SuluMediaStreamController
         $mimeType = $fileVersion->getMimeType();
         $version = $fileVersion->getVersion();
 
+        print_r($version);exit;
+
         /** @var PBStorageInterface $storage */
         $storage = $this->getStorage();
 
