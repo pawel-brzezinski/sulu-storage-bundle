@@ -24,15 +24,15 @@ additionally if you want to use them:
   
 #### Step 3: Enable the bundle
 
-Add this bundle to *app/AbstractKernel.php*
+Add this bundle to `app/AbstractKernel.php`
 
 ```
-    new PB\Bundle\SuluStorageBundle\PBSuluStorageBundle(),
+new PB\Bundle\SuluStorageBundle\PBSuluStorageBundle(),
 ```
 
 #### Step 4: Configure filesystems
 
-It is time to use **OneupFlysystemBundle**. In your *config.yml* file you need to configure filesystem which you want 
+It is time to use **OneupFlysystemBundle**. In your `config.yml` file you need to configure filesystem which you want 
 to use as the master storage, replica storage (optional) and format cache storage. Here is the example:
 
 ```
@@ -66,7 +66,7 @@ To get more information please visit [OneupFlysystemBundle](https://github.com/1
 
 #### Step 5: Configure storage
 
-In this step you have to configure storage for master, replica (optional) and format cache. In your *config.yml* file
+In this step you have to configure storage for master, replica (optional) and format cache. In your `config.yml` file
 add:
 
 ```
@@ -99,7 +99,7 @@ pb_sulu_storage:
 
 to `app/config/website/routing.yml` (this file is included to admin routing). 
 
-**Attention:** It is very important to add this **before** *sulu_media* definition. Finally it should looks like this:
+**Attention:** It is very important to add this **before** ~sulu_media~ definition. Finally it should looks like this:
 
 ```
 pb_sulu_storage:

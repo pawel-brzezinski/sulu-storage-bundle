@@ -2,7 +2,7 @@
 
 This unofficial bundle for [Sulu CMF](https://github.com/sulu/sulu), provides possibility to use remote storage bundle (like AWS S3) for Sulu media files.
 
-SuluMediaBundle use [Flysystem](https://github.com/thephpleague/flysystem) filesystem abstraction in compination with [OneupFlysystemBundle](https://github.com/1up-lab/OneupFlysystemBundle).
+SuluMediaBundle use [Flysystem](https://github.com/thephpleague/flysystem) filesystem abstraction in combination with [OneupFlysystemBundle](https://github.com/1up-lab/OneupFlysystemBundle).
 
 **Features**
 - Use local or external service as storage for media files.
@@ -30,4 +30,4 @@ The installation description you will find [here](Resources/doc/index.md).
 
 - [Local adapter](Resources/doc/local_adapter.md)
 - [AwsS3v3 adapter](Resources/doc/awss3v3_adapter.md)
-- [Custom adapter](Resources/doc/custom_adapter.md)
+- [Custom adapter implementation](Resources/doc/custom_adapter.md)
