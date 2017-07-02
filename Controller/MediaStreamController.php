@@ -2,7 +2,7 @@
 
 namespace PB\Bundle\SuluStorageBundle\Controller;
 
-use PB\Bundle\SuluStorageBundle\HttpFoundation\BinaryStreamResponse;
+use PB\Bundle\SuluStorageBundle\HttpFoundation\BinaryFlysystemFileManagerResponse;
 use PB\Bundle\SuluStorageBundle\Storage\PBStorageInterface;
 use Sulu\Bundle\MediaBundle\Controller\MediaStreamController as SuluMediaStreamController;
 use Sulu\Bundle\MediaBundle\Entity\FileVersion;
@@ -18,12 +18,12 @@ use Symfony\Component\HttpFoundation\Response;
 class MediaStreamController extends SuluMediaStreamController
 {
     /**
-     * Overloaded standard Sulu Media getFileResponse with usage BinaryStreamResponse.
+     * Overloaded standard Sulu Media getFileResponse with usage BinaryFlysystemFileManagerResponse.
      *
      * @param FileVersion $fileVersion
      * @param string $locale
      * @param string $dispositionType
-     * @return BinaryStreamResponse|RedirectResponse|Response
+     * @return BinaryFlysystemFileManagerResponse|RedirectResponse|Response
      */
     protected function getFileResponse(
         $fileVersion,
@@ -34,12 +34,7 @@ class MediaStreamController extends SuluMediaStreamController
         $cleaner = $this->get('sulu.content.path_cleaner');
 
         $fileName = $fileVersion->getName();
-        $fileSize = $fileVersion->getSize();
         $storageOptions = $fileVersion->getStorageOptions();
-        $mimeType = $fileVersion->getMimeType();
-        $version = $fileVersion->getVersion();
-
-        print_r($version);exit;
 
         /** @var PBStorageInterface $storage */
         $storage = $this->getStorage();
@@ -50,27 +45,23 @@ class MediaStreamController extends SuluMediaStreamController
             return new RedirectResponse($mediaUrl);
         }
 
-        $stream = $storage->loadStream($fileName, $storageOptions);
+        $fileManager = $storage->getFileManager($fileName, $storageOptions);
 
-        if (null === $stream) {
+        if (null === $fileManager) {
             return new Response('File not found', 404);
         }
 
-        $response = new BinaryStreamResponse($stream);
-
-        $pathInfo = pathinfo($fileName);
-
-        // Prepare headers
-        $disposition = $response->headers->makeDisposition(
+        $response = new BinaryFlysystemFileManagerResponse(
+            $fileManager,
+            200,
+            [],
+            true,
             $dispositionType,
-            $fileName,
-            $cleaner->cleanup($pathInfo['filename'], $locale) . '.' . $pathInfo['extension']
+            false,
+            true,
+            $cleaner,
+            $locale
         );
-
-        // Set headers
-        $response->headers->set('Content-Type', !empty($mimeType) ? $mimeType : 'application/octet-stream');
-        $response->headers->set('Content-Disposition', $disposition);
-        $response->headers->set('Content-length', $fileSize);
 
         return $response;
     }

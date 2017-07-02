@@ -2,6 +2,9 @@
 
 namespace PB\Bundle\SuluStorageBundle\Storage;
 
+use League\Flysystem\File;
+use PB\Bundle\SuluStorageBundle\Manager\FlysystemFileManagerInterface;
+
 /**
  * Interface for PB storage
  *
@@ -28,4 +31,24 @@ interface PBStorageInterface
      * @return null|false|resource
      */
     public function loadStream($fileName, $storageOption = null);
+
+    /**
+     * Get Flysystem File handler.
+     *
+     * @param string $fileName
+     * @param string|null $storageOption
+     *
+     * @return null|File
+     */
+    public function getFile($fileName, $storageOption = null);
+
+    /**
+     * Get Filesystem File manager.
+     *
+     * @param string $fileName
+     * @param string|null $storageOption
+     *
+     * @return null|FlysystemFileManagerInterface
+     */
+    public function getFileManager($fileName, $storageOption = null);
 }

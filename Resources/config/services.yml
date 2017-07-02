@@ -1,4 +1,15 @@
 services:
+    # Path resolvers
+    pb_sulu_storage.local.path_resolver:
+        class: PB\Bundle\SuluStorageBundle\Resolver\LocalPathResolver
+        tags:
+            - { name: pb_sulu_storage.path_resolver, alias: local }
+
+    pb_sulu_storage.s3.path_resolver:
+        class: PB\Bundle\SuluStorageBundle\Resolver\AwsS3v3PathResolver
+        tags:
+            - { name: pb_sulu_storage.path_resolver, alias: awss3v3 }
+
     # External URL resolvers
     pb_sulu_storage.s3.external_url_resolver:
         class: PB\Bundle\SuluStorageBundle\Resolver\AwsS3v3ExternalUrlResolver

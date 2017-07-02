@@ -39,7 +39,6 @@ class Configuration implements ConfigurationInterface
             ->children()
                 ->arrayNode('master')
                     ->info('The master storage filesystem.')
-                    ->addDefaultsIfNotSet()
                     ->children()
                         ->scalarNode('type')
                             ->isRequired()
@@ -87,6 +86,8 @@ class Configuration implements ConfigurationInterface
                     return !isset($v['master']) || !isset($v['master']['filesystem']) || !$v['master']['filesystem'];
                 })
                 ->thenInvalid('Master storage filesystem must be defined.')
+            ->end()
+            ->validate()
                 ->ifTrue(function($v) {
                     return !isset($v['format_cache']) || !isset($v['format_cache']['filesystem']) || !$v['format_cache']['filesystem'];
                 })

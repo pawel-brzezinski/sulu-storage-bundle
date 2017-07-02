@@ -4,9 +4,9 @@ namespace PB\Bundle\SuluStorageBundle\DependencyInjection\Compiler;
 
 use League\Flysystem\FilesystemNotFoundException;
 use PB\Bundle\SuluStorageBundle\Exception\AliasNotFoundException;
-use PB\Bundle\SuluStorageBundle\Exception\MasterConfigNotFoundException;
 use PB\Bundle\SuluStorageBundle\FormatCache\PBFormatCache;
 use PB\Bundle\SuluStorageBundle\Manager\PBStorageManager;
+use PB\Bundle\SuluStorageBundle\Resolver\Exception\PathResolverNotDefinedException;
 use PB\Bundle\SuluStorageBundle\Storage\PBStorage;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -38,6 +38,11 @@ class StoragePass implements CompilerPassInterface
     /**
      * @var array
      */
+    protected $pathResolvers = [];
+
+    /**
+     * @var array
+     */
     protected $extUrlResolvers = [];
 
     /**
@@ -54,15 +59,13 @@ class StoragePass implements CompilerPassInterface
         // Find storage config
         $this->findStorageConfig($container, 'master');
         $this->findStorageConfig($container, 'replica');
-        $this->findStorageConfig($container, 'format_cache');
+        $this->findStorageConfig($container, 'formatCache', 'format_cache');
 
-        // Return exception if master storage config not found
-        if ($this->masterConfig === null) {
-            throw new MasterConfigNotFoundException('Config for master storage cannot be found.');
-        }
+        // Find path resolvers services
+        $this->findTaggedServices($container, 'pb_sulu_storage.path_resolver', 'pathResolvers');
 
         // Find external url resolvers services
-        $this->findExternalUrlResolvers($container);
+        $this->findTaggedServices($container, 'pb_sulu_storage.external_url_resolver', 'extUrlResolvers');
 
         // Set PBStorage format cache as Sulu Media Local Format Cache
         $this->overloadSuluMediaFormatCache($container);
@@ -76,31 +79,35 @@ class StoragePass implements CompilerPassInterface
      *
      * @param ContainerBuilder $container
      * @param string $type      master||replica
+     * @param string|null $key
      *
      * @return $this
      */
-    protected function findStorageConfig(ContainerBuilder $container, $type)
+    protected function findStorageConfig(ContainerBuilder $container, $type, $key = null)
     {
-        if (!$container->hasParameter('pb_sulu_storage.' . $type)) {
+        $key = $key !== null ? $key : $type;
+
+        if (!$container->hasParameter('pb_sulu_storage.' . $key)) {
             return $this;
         }
 
         $configName = $type . 'Config';
-        $this->{$configName} = $container->getParameter('pb_sulu_storage.' . $type);
+        $this->{$configName} = $container->getParameter('pb_sulu_storage.' . $key);
 
         return $this;
     }
 
     /**
-     * Find external url resolvers.
+     * Find tagged services.
      *
      * @param ContainerBuilder $container
+     * @param string $tag
+     * @param string $field
      *
      * @return $this
      */
-    protected function findExternalUrlResolvers(ContainerBuilder $container)
+    protected function findTaggedServices(ContainerBuilder $container, $tag, $field)
     {
-        $tag = 'pb_sulu_storage.external_url_resolver';
         $taggedServices = $container->findTaggedServiceIds($tag);
 
         foreach ($taggedServices as $id => $tags) {
@@ -109,7 +116,7 @@ class StoragePass implements CompilerPassInterface
                     throw new AliasNotFoundException($tag);
                 }
 
-                $this->extUrlResolvers[$attributes['alias']] = $id;
+                $this->{$field}[$attributes['alias']] = $id;
             }
         }
 
@@ -128,11 +135,7 @@ class StoragePass implements CompilerPassInterface
         $storageDef = $container->getDefinition('sulu_media.format_cache');
         $storageDef->setClass(PBFormatCache::class);
 
-        $storageManager = $this->generateStorageFilesystemManager($container, 'format_cache');
-
-        if (!$storageManager) {
-            throw new MasterConfigNotFoundException('Config for format cache media storage cannot be found.');
-        }
+        $storageManager = $this->generateStorageFilesystemManager($container, 'formatCache', 'format_cache');
 
         $storageDef->setArguments([
             $storageManager,
@@ -157,11 +160,6 @@ class StoragePass implements CompilerPassInterface
         $storageDef->setClass(PBStorage::class);
 
         $masterStorageManager = $this->generateStorageFilesystemManager($container, 'master');
-
-        if (!$masterStorageManager) {
-            throw new MasterConfigNotFoundException('Config for master storage cannot be found.');
-        }
-
         $replicaStorageManager = $this->generateStorageFilesystemManager($container, 'replica');
 
         $storageDef->setArguments([$masterStorageManager, $replicaStorageManager]);
@@ -174,16 +172,19 @@ class StoragePass implements CompilerPassInterface
      *
      * @param ContainerBuilder $container
      * @param string $type
+     * @param null|string $key
      *
      * @return null|Definition
      */
     protected function generateStorageFilesystemManager(
         ContainerBuilder $container,
-        $type = 'master'
+        $type = 'master',
+        $key = null
     ) {
+        $key = $key !== null ? $key : $type;
         $configName = $type . 'Config';
 
-        if (!$this->{$configName}) {
+        if (!is_array($this->{$configName})) {
             return null;
         }
 
@@ -194,26 +195,36 @@ class StoragePass implements CompilerPassInterface
             throw new FilesystemNotFoundException(sprintf('Filesystem with name "%s" not found.', $config['filesystem']));
         }
 
-        $extUrlResolverName = $this->findExternalUrlResolverServiceNameForFilesystem($config['type']);
+        $pathResolverName = $this->findServiceNameForFilesystem($config['type'], 'pathResolvers');
+
+        if (null === $pathResolverName) {
+            throw new PathResolverNotDefinedException($config['type']);
+        }
+
+        $extUrlResolverName = $this->findServiceNameForFilesystem($config['type'], 'extUrlResolvers');
 
         $managerDef = new Definition(PBStorageManager::class, [
             new Reference($fsServiceName),
+            new Reference($pathResolverName),
             $extUrlResolverName ? new Reference($extUrlResolverName) : null,
             isset($config['segments']) ? $config['segments'] : null,
         ]);
+
+        $container->setDefinition('pb_sulu_storage.' . $key . '.storage_manager', $managerDef);
 
         return $managerDef;
     }
 
     /**
-     * Find external url resolver service name for filesystem type.
+     * Find service name for filesystem type.
      *
-     * @param $fsType
+     * @param string $fsType
+     * @param string $field
      *
-     * @return string|null
+     * @return null|string
      */
-    protected function findExternalUrlResolverServiceNameForFilesystem($fsType)
+    protected function findServiceNameForFilesystem($fsType, $field)
     {
-        return isset($this->extUrlResolvers[$fsType]) ? $this->extUrlResolvers[$fsType] : null;
+        return isset($this->{$field}) && isset($this->{$field}[$fsType]) ? $this->{$field}[$fsType] : null;
     }
 }

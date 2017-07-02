@@ -101,7 +101,7 @@ class PBFormatCache implements FormatCacheInterface
      *
      * @param int $id
      * @param string $fileName
-     * @param array $options
+     * @param string $options
      * @param string $format
      * @param int $version
      * @param int $subVersion

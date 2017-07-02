@@ -2,7 +2,9 @@
 
 namespace PB\Bundle\SuluStorageBundle\Storage;
 
+use League\Flysystem\File;
 use League\Flysystem\Filesystem;
+use PB\Bundle\SuluStorageBundle\Manager\FlysystemFileManager;
 use PB\Bundle\SuluStorageBundle\Manager\PBStorageManager;
 use Sulu\Bundle\MediaBundle\Media\Exception\ImageProxyMediaNotFoundException;
 use Sulu\Bundle\MediaBundle\Media\Storage\StorageInterface;
@@ -76,9 +78,7 @@ class PBStorage implements StorageInterface, PBStorageInterface
      */
     public function loadAsString($fileName, $version, $storageOption)
     {
-        $storageOption = $storageOption ? json_decode($storageOption) : new \stdClass();
-        $segment = isset($storageOption->segment) ? $storageOption->segment : null;
-        $filePath = $this->masterManager->getFilePath($fileName, $segment);
+        $filePath = $this->generateFilePath($fileName, $storageOption);
 
         if (!$this->masterManager->getFilesystem()->has($filePath)) {
             throw new ImageProxyMediaNotFoundException(sprintf('Original media at path "%s" not found', $filePath));
@@ -98,12 +98,11 @@ class PBStorage implements StorageInterface, PBStorageInterface
     {
         $storageOption = $storageOption ? json_decode($storageOption) : new \stdClass();
 
-        if (!isset($storageOption->segment) || !$storageOption->segment) {
+        if (!isset($storageOption->fileName) || !$storageOption->fileName) {
             return false;
         }
 
-        $segment = isset($storageOption->segment) ? $storageOption->segment : null;
-        $filePath = $this->masterManager->getFilePath($storageOption->fileName, $segment);
+        $filePath = $this->generateFilePath($storageOption->fileName, $storageOption);
 
         if (!$this->masterManager->getFilesystem()->has($filePath)) {
             return false;
@@ -130,9 +129,7 @@ class PBStorage implements StorageInterface, PBStorageInterface
      */
     public function getMediaUrl($fileName, $storageOption = null)
     {
-        $storageOption = $storageOption ? json_decode($storageOption) : new \stdClass();
-        $segment = isset($storageOption->segment) ? $storageOption->segment : null;
-        $filePath = $this->masterManager->getFilePath($fileName, $segment);
+        $filePath = $this->generateFilePath($fileName, $storageOption);
 
         return $this->masterManager->getUrl($filePath);
     }
@@ -147,6 +144,24 @@ class PBStorage implements StorageInterface, PBStorageInterface
      */
     public function loadStream($fileName, $storageOption = null)
     {
+        $filePath = $this->generateFilePath($fileName, $storageOption);
+
+        if (!$this->masterManager->getFilesystem()->has($filePath)) {
+            return null;
+        }
+
+        return $this->masterManager->getFilesystem()->readStream($filePath);
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @param string $fileName
+     * @param null $storageOption
+     * @return null|File
+     */
+    public function getFile($fileName, $storageOption = null)
+    {
         $storageOption = $storageOption ? json_decode($storageOption) : new \stdClass();
         $segment = isset($storageOption->segment) ? $storageOption->segment : null;
         $filePath = $this->masterManager->getFilePath($fileName, $segment);
@@ -155,7 +170,28 @@ class PBStorage implements StorageInterface, PBStorageInterface
             return null;
         }
 
-        return $this->masterManager->getFilesystem()->readStream($filePath);
+        $file = $this->masterManager->getFilesystem()->get($filePath);
+
+        return $file->isFile() ? $file : null;
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @param string $fileName
+     * @param null $storageOption
+     *
+     * @return null|FlysystemFileManager
+     */
+    public function getFileManager($fileName, $storageOption = null)
+    {
+        $file = $this->getFile($fileName, $storageOption);
+
+        if (null === $file) {
+            return null;
+        }
+
+        return new FlysystemFileManager($file, $this->masterManager->getPathResolver(), $this->masterManager->getUrlResolver());
     }
 
     /**
@@ -179,5 +215,21 @@ class PBStorage implements StorageInterface, PBStorageInterface
             'segment' => $segment,
             'fileName' => $fileName,
         ]);
+    }
+
+    /**
+     * Generate file path by file name and storage options.
+     *
+     * @param string $fileName
+     * @param null|string $storageOption
+     *
+     * @return string
+     */
+    protected function generateFilePath($fileName, $storageOption = null)
+    {
+        $storageOption = $storageOption ? json_decode($storageOption) : new \stdClass();
+        $segment = isset($storageOption->segment) ? $storageOption->segment : null;
+
+        return $this->masterManager->getFilePath($fileName, $segment);
     }
 }

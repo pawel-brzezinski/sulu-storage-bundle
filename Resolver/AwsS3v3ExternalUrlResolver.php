@@ -6,7 +6,7 @@ use League\Flysystem\AdapterInterface;
 use League\Flysystem\AwsS3v3\AwsS3Adapter;
 
 /**
- * Interface for Flysystem S3v3 adapter external url resolver
+ * Flysystem S3v3 adapter external url resolver
  *
  * @author Pawel Brzezinski <pawel.brzezinski@smartint.pl>
  */

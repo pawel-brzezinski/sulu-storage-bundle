@@ -4,6 +4,7 @@ namespace PB\Bundle\SuluStorageBundle\Manager;
 
 use League\Flysystem\Filesystem;
 use PB\Bundle\SuluStorageBundle\Resolver\ExternalUrlResolverInterface;
+use PB\Bundle\SuluStorageBundle\Resolver\PathResolverInterface;
 
 /**
  * PB Storage manager
@@ -16,6 +17,11 @@ class PBStorageManager
      * @var Filesystem
      */
     protected $filesystem;
+
+    /**
+     * @var PathResolverInterface
+     */
+    protected $pathResolver;
 
     /**
      * @var ExternalUrlResolverInterface
@@ -31,16 +37,19 @@ class PBStorageManager
      * PBStorageManager constructor.
      *
      * @param Filesystem $filesystem
+     * @param PathResolverInterface $pathResolver
      * @param ExternalUrlResolverInterface|null $externalUrlResolver
      * @param null|int $segments
      */
     public function __construct(
         Filesystem $filesystem,
+        PathResolverInterface $pathResolver,
         ExternalUrlResolverInterface $externalUrlResolver = null,
         $segments = null
     )
     {
         $this->filesystem = $filesystem;
+        $this->pathResolver = $pathResolver;
         $this->externalUrlResolver = $externalUrlResolver;
         $this->segments = $segments;
     }
@@ -53,6 +62,16 @@ class PBStorageManager
     public function getFilesystem()
     {
         return $this->filesystem;
+    }
+
+    /**
+     * Get path resolver.
+     *
+     * @return PathResolverInterface
+     */
+    public function getPathResolver()
+    {
+        return $this->pathResolver;
     }
 
     /**
