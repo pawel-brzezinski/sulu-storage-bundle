@@ -39,6 +39,10 @@ class MediaStreamController extends SuluMediaStreamController
         /** @var PBStorageInterface $storage */
         $storage = $this->getStorage();
 
+        if (!$storage->isFileExist($fileName, $storageOptions)) {
+            return new Response('File not found', 404);
+        }
+
         $mediaUrl = $storage->getMediaUrl($fileName, $storageOptions);
 
         if ($mediaUrl) {

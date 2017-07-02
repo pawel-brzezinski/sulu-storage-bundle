@@ -125,6 +125,21 @@ class PBStorage implements StorageInterface, PBStorageInterface
      * @param string $fileName
      * @param null|string $storageOption
      *
+     * @return bool
+     */
+    public function isFileExist($fileName, $storageOption = null)
+    {
+        $filePath = $this->generateFilePath($fileName, $storageOption);
+
+        return $this->masterManager->getFilesystem()->has($filePath);
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @param string $fileName
+     * @param null|string $storageOption
+     *
      * @return null|string
      */
     public function getMediaUrl($fileName, $storageOption = null)

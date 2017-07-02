@@ -13,6 +13,15 @@ use PB\Bundle\SuluStorageBundle\Manager\FlysystemFileManagerInterface;
 interface PBStorageInterface
 {
     /**
+     * Check if file exist in storage.
+     *
+     * @param string $fileName
+     * @param null|string $storageOption
+     * @return bool
+     */
+    public function isFileExist($fileName, $storageOption = null);
+
+    /**
      * Get media external url.
      *
      * @param string $fileName
