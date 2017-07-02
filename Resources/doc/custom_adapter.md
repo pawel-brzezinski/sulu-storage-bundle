@@ -9,7 +9,7 @@ please visit [OneupFlysystemBundle](https://github.com/1up-lab/OneupFlysystemBun
 #### Step 1: Unique identifier for adapter
 
 Think about some unique identifier for your adapter implementation. In this documentation it will be represented by
-~my_adapter_id~ string. 
+`my_adapter_id` string. 
 
 Currently, these ids are in use:
 - local

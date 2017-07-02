@@ -99,7 +99,7 @@ pb_sulu_storage:
 
 to `app/config/website/routing.yml` (this file is included to admin routing). 
 
-**Attention:** It is very important to add this **before** ~sulu_media~ definition. Finally it should looks like this:
+**Attention:** It is very important to add this **before** `sulu_media` definition. Finally it should looks like this:
 
 ```
 pb_sulu_storage:

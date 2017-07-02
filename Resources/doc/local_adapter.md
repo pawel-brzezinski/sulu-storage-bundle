@@ -9,7 +9,7 @@ For more information visit
 
 #### Storage configuration
 
-Master storage config example (in your ~config.yml~):
+Master storage config example (in your `config.yml`):
 
 ```
 pb_sulu_storage:
