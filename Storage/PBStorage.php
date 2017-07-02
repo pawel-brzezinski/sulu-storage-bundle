@@ -102,7 +102,7 @@ class PBStorage implements StorageInterface, PBStorageInterface
             return false;
         }
 
-        $filePath = $this->generateFilePath($storageOption->fileName, $storageOption);
+        $filePath = $this->generateFilePath($storageOption->fileName, json_encode($storageOption));
 
         if (!$this->masterManager->getFilesystem()->has($filePath)) {
             return false;
