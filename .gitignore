@@ -4,8 +4,7 @@
 # Vendors
 /vendor
 
-# Cache
+# Tests
 /Tests/app/cache
-
-# Logs
 /Tests/app/logs
+/Tests/coverage

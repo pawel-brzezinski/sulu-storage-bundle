@@ -1,0 +1,10 @@
+pb_sulu_storage:
+    master:
+        type: local
+        filesystem: local_filesystem
+        segments: 10
+    replica:
+        type: local
+    format_cache:
+        type: local
+        filesystem: local_filesystem
