@@ -33,8 +33,14 @@ class MediaStreamController extends SuluMediaStreamController
     {
         $cleaner = $this->get('sulu.content.path_cleaner');
 
-        $fileName = $fileVersion->getName();
         $storageOptions = $fileVersion->getStorageOptions();
+        $decodedStorageOptions = json_decode($storageOptions);
+
+        if (!isset($decodedStorageOptions->fileName)) {
+            return new Response('File not found', 404);
+        }
+
+        $fileName = $decodedStorageOptions->fileName;
 
         /** @var PBStorageInterface $storage */
         $storage = $this->getStorage();

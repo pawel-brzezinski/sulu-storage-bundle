@@ -61,6 +61,17 @@ class MediaStreamControllerTest extends AbstractTests
         $this->assertEquals('http://example.com/test.gif', $response->getTargetUrl());
     }
 
+    public function testGetFileResponseIfFileNameNotExistInStorageOptions()
+    {
+        $storageManager = $this->generateStorageManagerMock();
+        $storage = $this->generateStorageMock($storageManager);
+
+        $response = $this->callGetFileResponseMethod($storage, true);
+
+        $this->assertInstanceOf(Response::class, $response);
+        $this->assertEquals('404', $response->getStatusCode());
+    }
+
     public function testGetFileResponseIfFileNotExist()
     {
         $storageManager = $this->generateStorageManagerMock();
@@ -91,7 +102,7 @@ class MediaStreamControllerTest extends AbstractTests
         $this->assertEquals('404', $response->getStatusCode());
     }
 
-    protected function callGetFileResponseMethod($storage)
+    protected function callGetFileResponseMethod($storage, $withoutStorageOptionsData = false)
     {
         $ctrlMock = $this->getMockBuilder(MediaStreamController::class)
             ->disableOriginalConstructor()
@@ -102,18 +113,32 @@ class MediaStreamControllerTest extends AbstractTests
             ->method('get')
             ->with('sulu.content.path_cleaner')
             ->willReturn($this->generatePathCleanerMock());
-        $ctrlMock
-            ->expects($this->at(1))
-            ->method('get')
-            ->with('sulu_media.storage')
-            ->willReturn($storage);
+
+        if (!$withoutStorageOptionsData) {
+            $ctrlMock
+                ->expects($this->at(1))
+                ->method('get')
+                ->with('sulu_media.storage')
+                ->willReturn($storage);
+        }
 
         $reflection = new \ReflectionClass(MediaStreamController::class);
         $method = $reflection->getMethod('getFileResponse');
         $method->setAccessible(true);
 
+        $fileVersionMock = $this->generateFileVersionMock();
+
+        if (!$withoutStorageOptionsData) {
+            $fileVersionMock
+                ->expects($this->any())
+                ->method('getStorageOptions')
+                ->willReturn(json_encode([
+                    'fileName' => 'test.gif',
+                ]));
+        }
+
         return $method->invokeArgs($ctrlMock, [
-            $this->generateFileVersionMock(),
+            $fileVersionMock,
             'en',
             ResponseHeaderBag::DISPOSITION_ATTACHMENT,
         ]);
