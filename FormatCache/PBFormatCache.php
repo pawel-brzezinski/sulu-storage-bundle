@@ -6,7 +6,6 @@ use PB\Bundle\SuluStorageBundle\Manager\PBStorageManager;
 use Sulu\Bundle\MediaBundle\Media\Exception\ImageProxyInvalidUrl;
 use Sulu\Bundle\MediaBundle\Media\Exception\ImageProxyUrlNotFoundException;
 use Sulu\Bundle\MediaBundle\Media\FormatCache\FormatCacheInterface;
-use Symfony\Component\Filesystem\Exception\IOException;
 
 /**
  * Sulu media format cache based on Flysystem
@@ -64,7 +63,7 @@ class PBFormatCache implements FormatCacheInterface
 
         try {
             $this->storageManager->getFilesystem()->write($savePath, $content);
-        } catch (IOException $ioException) {
+        } catch (\Exception $ioException) {
             return false;
         }
 
