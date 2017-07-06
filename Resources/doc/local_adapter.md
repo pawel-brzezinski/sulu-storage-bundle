@@ -7,6 +7,8 @@
 For more information visit 
 [OneupFlysystemBundle](https://github.com/1up-lab/OneupFlysystemBundle/blob/master/Resources/doc/adapter_local.md) documentation.
 
+**Attention**: Please use parameter `%kernel.var_dir%` to define adapter directory.
+
 #### Storage configuration
 
 Master storage config example (in your `config.yml`):

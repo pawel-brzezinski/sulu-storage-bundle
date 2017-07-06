@@ -39,29 +39,31 @@ app.local.path_resolver:
 **Hint:** Check [AbstractPathResolver.php](../../Resolver/AbstractPathResolver.php).
 Maybe you just need to extend this abstract.
 
-#### Step 2: External url resolver (optional)
+#### Step 2: Url resolver
 
-Creating external url resolver is optional. But this resolver is very useful for remote adapters where you can access
-to your resources by url (like in AWS S3, ex: `https://somebucket.s3.eu-central-1.amazonaws.com/path/to/file.jpg`).
+This resolver is very useful for remote adapters where you can access
+to your resources by url (like in AWS S3 ex: `https://somebucket.s3.eu-central-1.amazonaws.com/path/to/file.jpg`,
+or in Local ex: `/uploads/file.jpg`).
 
-In this case, StreamMediaController will make redirect to external url instead of render file.
+In this case, StreamMediaController will make redirect if it will be an external url instead of render file.
 
-###### Create external url resolver class
+###### Create url resolver class
 
-Create external url resolver class for adapter which will be an implementation of `ExternalUrlResolverInterface`.
-For more clarity check out currently existing external url resolver:
-- [AwsS3v3ExternalUrlResolver](../../Resolver/AwsS3v3ExternalUrlResolver.php)
+Create url resolver class for adapter which will be an implementation of `UrlResolverInterface`.
+For more clarity check out currently existing url resolver:
+- [AwsS3v3UrlResolver](../../Resolver/AwsS3v3UrlResolver.php)
+- [LocalUrlResolver](../../Resolver/LocalUrlResolver.php)
 
-###### Define external url resolver service
+###### Define url resolver service
 
-Define your external url resolver class as service and tag it by `pb_sulu_storage.external_url_resolver` tag 
+Define your url resolver class as service and tag it by `pb_sulu_storage.url_resolver` tag 
 with `my_adapter_id` alias. Example:
 
 ```
-app.local.external_url_resolver:
-    class: AppBundle\Resolver\MyExternalUrlResolver
+app.local.url_resolver:
+    class: AppBundle\Resolver\MyUrlResolver
     tags:
-        - { name: pb_sulu_storage.external_url_resolver, alias: my_adapter_id }
+        - { name: pb_sulu_storage.url_resolver, alias: my_adapter_id }
 ```
 
 #### Step 3: Use your adapter implementation
