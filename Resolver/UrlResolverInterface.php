@@ -5,14 +5,14 @@ namespace PB\Bundle\SuluStorageBundle\Resolver;
 use League\Flysystem\AdapterInterface;
 
 /**
- * Interface for Flysystem adapters external url resolvers
+ * Interface for Flysystem adapters url resolvers
  *
  * @author Pawel Brzezinski <pawel.brzezinski@smartint.pl>
  */
-interface ExternalUrlResolverInterface
+interface UrlResolverInterface
 {
     /**
-     * Get external url to file. Return null if external url is not supported.
+     * Get url to file.
      *
      * @param AdapterInterface $adapter
      * @param string $fileName

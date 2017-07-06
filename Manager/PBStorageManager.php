@@ -3,7 +3,7 @@
 namespace PB\Bundle\SuluStorageBundle\Manager;
 
 use League\Flysystem\Filesystem;
-use PB\Bundle\SuluStorageBundle\Resolver\ExternalUrlResolverInterface;
+use PB\Bundle\SuluStorageBundle\Resolver\UrlResolverInterface;
 use PB\Bundle\SuluStorageBundle\Resolver\PathResolverInterface;
 
 /**
@@ -24,9 +24,9 @@ class PBStorageManager
     protected $pathResolver;
 
     /**
-     * @var ExternalUrlResolverInterface
+     * @var UrlResolverInterface
      */
-    protected $externalUrlResolver;
+    protected $urlResolver;
 
     /**
      * @var null|int
@@ -38,19 +38,19 @@ class PBStorageManager
      *
      * @param Filesystem $filesystem
      * @param PathResolverInterface $pathResolver
-     * @param ExternalUrlResolverInterface|null $externalUrlResolver
+     * @param UrlResolverInterface $urlResolver
      * @param null|int $segments
      */
     public function __construct(
         Filesystem $filesystem,
         PathResolverInterface $pathResolver,
-        ExternalUrlResolverInterface $externalUrlResolver = null,
+        UrlResolverInterface $urlResolver = null,
         $segments = null
     )
     {
         $this->filesystem = $filesystem;
         $this->pathResolver = $pathResolver;
-        $this->externalUrlResolver = $externalUrlResolver;
+        $this->urlResolver = $urlResolver;
         $this->segments = $segments;
     }
 
@@ -75,13 +75,13 @@ class PBStorageManager
     }
 
     /**
-     * Get external url resolver.
+     * Get url resolver.
      *
-     * @return null|ExternalUrlResolverInterface
+     * @return UrlResolverInterface
      */
     public function getUrlResolver()
     {
-        return $this->externalUrlResolver;
+        return $this->urlResolver;
     }
 
     /**
@@ -89,15 +89,11 @@ class PBStorageManager
      *
      * @param string $fileName
      *
-     * @return null|string
+     * @return string
      */
     public function getUrl($fileName)
     {
-        if ($this->externalUrlResolver === null) {
-            return null;
-        }
-
-        return $this->externalUrlResolver->getUrl($this->filesystem->getAdapter(), $fileName);
+        return $this->urlResolver->getUrl($this->filesystem->getAdapter(), $fileName);
     }
 
     /**

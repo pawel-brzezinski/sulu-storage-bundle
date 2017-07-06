@@ -10,8 +10,14 @@ services:
         tags:
             - { name: pb_sulu_storage.path_resolver, alias: awss3v3 }
 
-    # External URL resolvers
-    pb_sulu_storage.s3.external_url_resolver:
-        class: PB\Bundle\SuluStorageBundle\Resolver\AwsS3v3ExternalUrlResolver
+    # URL resolvers
+    pb_sulu_storage.local.url_resolver:
+        class: PB\Bundle\SuluStorageBundle\Resolver\LocalUrlResolver
+        arguments: ['%kernel.project_dir%/web']
         tags:
-            - { name: pb_sulu_storage.external_url_resolver, alias: awss3v3 }
+            - { name: pb_sulu_storage.url_resolver, alias: local }
+
+    pb_sulu_storage.s3.url_resolver:
+        class: PB\Bundle\SuluStorageBundle\Resolver\AwsS3v3UrlResolver
+        tags:
+            - { name: pb_sulu_storage.url_resolver, alias: awss3v3 }

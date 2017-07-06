@@ -118,10 +118,10 @@ class PBFormatCache implements FormatCacheInterface
             return $this->getProxyPathUrl($id, $fileName, $format, $segment, $version, $subVersion);
         }
 
-        $extUrl = $this->storageManager->getUrl($filePath);
-        $queryString = '?v=' . $version . '-' . $subVersion;
+        $url = $this->storageManager->getUrl($filePath);
+        $url .= '?v=' . $version . '-' . $subVersion;
 
-        return $extUrl !== null ? $extUrl . $queryString : '/' . ltrim($filePath, '/') . $queryString;
+        return $url;
     }
 
     /**

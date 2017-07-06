@@ -7,6 +7,7 @@ use PB\Bundle\SuluStorageBundle\Exception\AliasNotFoundException;
 use PB\Bundle\SuluStorageBundle\FormatCache\PBFormatCache;
 use PB\Bundle\SuluStorageBundle\Manager\PBStorageManager;
 use PB\Bundle\SuluStorageBundle\Resolver\Exception\PathResolverNotDefinedException;
+use PB\Bundle\SuluStorageBundle\Resolver\Exception\UrlResolverNotDefinedException;
 use PB\Bundle\SuluStorageBundle\Storage\PBStorage;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -43,7 +44,7 @@ class StoragePass implements CompilerPassInterface
     /**
      * @var array
      */
-    protected $extUrlResolvers = [];
+    protected $urlResolvers = [];
 
     /**
      * {@inheritdoc}
@@ -65,7 +66,7 @@ class StoragePass implements CompilerPassInterface
         $this->findTaggedServices($container, 'pb_sulu_storage.path_resolver', 'pathResolvers');
 
         // Find external url resolvers services
-        $this->findTaggedServices($container, 'pb_sulu_storage.external_url_resolver', 'extUrlResolvers');
+        $this->findTaggedServices($container, 'pb_sulu_storage.url_resolver', 'urlResolvers');
 
         // Set PBStorage format cache as Sulu Media Local Format Cache
         $this->overloadSuluMediaFormatCache($container);
@@ -201,12 +202,16 @@ class StoragePass implements CompilerPassInterface
             throw new PathResolverNotDefinedException($config['type']);
         }
 
-        $extUrlResolverName = $this->findServiceNameForFilesystem($config['type'], 'extUrlResolvers');
+        $urlResolverName = $this->findServiceNameForFilesystem($config['type'], 'urlResolvers');
+
+        if (null === $urlResolverName) {
+            throw new UrlResolverNotDefinedException($config['type']);
+        }
 
         $managerDef = new Definition(PBStorageManager::class, [
             new Reference($fsServiceName),
             new Reference($pathResolverName),
-            $extUrlResolverName ? new Reference($extUrlResolverName) : null,
+            new Reference($urlResolverName),
             isset($config['segments']) ? $config['segments'] : null,
         ]);
 
