@@ -7,7 +7,7 @@ use League\Flysystem\File;
 use League\Flysystem\Filesystem;
 use PB\Bundle\SuluStorageBundle\Manager\FlysystemFileManager;
 use PB\Bundle\SuluStorageBundle\Manager\PBStorageManager;
-use PB\Bundle\SuluStorageBundle\Resolver\ExternalUrlResolverInterface;
+use PB\Bundle\SuluStorageBundle\Resolver\UrlResolverInterface;
 use PB\Bundle\SuluStorageBundle\Resolver\PathResolverInterface;
 use PB\Bundle\SuluStorageBundle\Storage\PBStorage;
 use PHPUnit\Framework\TestCase;
@@ -82,7 +82,7 @@ abstract class AbstractTests extends TestCase
     {
         $mock = $this->getMockBuilder(FlysystemFileManager::class)
             ->disableOriginalConstructor()
-            ->setMethods(['getFile', 'getPathResolver', 'getExternalUrlResolver'])
+            ->setMethods(['getFile', 'getPathResolver', 'getUrlResolver'])
             ->getMock();
 
         return $mock;
@@ -119,9 +119,9 @@ abstract class AbstractTests extends TestCase
     /**
      * @return \PHPUnit_Framework_MockObject_MockObject
      */
-    protected function generateExtUrlResolverMock()
+    protected function generateUrlResolverMock()
     {
-        $mock = $this->getMockBuilder(ExternalUrlResolverInterface::class)
+        $mock = $this->getMockBuilder(UrlResolverInterface::class)
             ->disableOriginalConstructor()
             ->setMethods(['getUrl'])
             ->getMock();

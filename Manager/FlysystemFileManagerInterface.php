@@ -4,7 +4,7 @@ namespace PB\Bundle\SuluStorageBundle\Manager;
 
 use League\Flysystem\File;
 use PB\Bundle\SuluStorageBundle\Resolver\PathResolverInterface;
-use PB\Bundle\SuluStorageBundle\Resolver\ExternalUrlResolverInterface;
+use PB\Bundle\SuluStorageBundle\Resolver\UrlResolverInterface;
 
 /**
  * Interface for manager for Flysystem file item.
@@ -30,7 +30,7 @@ interface FlysystemFileManagerInterface
     /**
      * Get external url resolver.
      *
-     * @return null|ExternalUrlResolverInterface
+     * @return null|UrlResolverInterface
      */
-    public function getExternalUrlResolver();
+    public function getUrlResolver();
 }

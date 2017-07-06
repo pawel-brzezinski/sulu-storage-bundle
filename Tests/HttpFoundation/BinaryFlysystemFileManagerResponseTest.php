@@ -454,19 +454,19 @@ class BinaryFlysystemFileManagerResponseTest extends AbstractTests
         $fileMock
             ->expects($this->once())
             ->method('getPath')
-            ->willReturn($this->filePath);
+            ->willReturn($file);
 
-        $pathResolverMock = $this->generatePathResolverMock();
-        $pathResolverMock
+        $urlResolverMock = $this->generateUrlResolverMock();
+        $urlResolverMock
             ->expects($this->once())
-            ->method('getFullPath')
-            ->willReturn($this->filePath);
+            ->method('getUrl')
+            ->willReturn('http://example.com/test.gif');
 
         $managerMock = $this->getStandardManagerMock($fileMock, 1);
         $managerMock
             ->expects($this->once())
-            ->method('getPathResolver')
-            ->willReturn($pathResolverMock);
+            ->method('getUrlResolver')
+            ->willReturn($urlResolverMock);
 
         BinaryFlysystemFileManagerResponse::trustXSendfileTypeHeader();
         $response = BinaryFlysystemFileManagerResponse::create(
@@ -489,6 +489,7 @@ class BinaryFlysystemFileManagerResponseTest extends AbstractTests
         return array(
             array('/var/www/var/www/files/foo.txt', '/var/www/=/files/', '/files/var/www/files/foo.txt'),
             array('/home/foo/bar.txt', '/var/www/=/files/,/home/foo/=/baz/', '/baz/bar.txt'),
+            array('/var/uploads/media/foo.txt', '/var/uploads/=/uploads/', '/uploads/media/foo.txt'),
         );
     }
 
@@ -504,17 +505,17 @@ class BinaryFlysystemFileManagerResponseTest extends AbstractTests
             ->method('getFilesystem')
             ->willReturn($fsMock);
 
-        $pathResolverMock = $this->generatePathResolverMock();
-        $pathResolverMock
+        $urlResolverMock = $this->generateUrlResolverMock();
+        $urlResolverMock
             ->expects($this->once())
-            ->method('getFullPath')
+            ->method('getUrl')
             ->willReturn($realpath);
 
         $managerMock = $this->getStandardManagerMock($fileMock, 1);
         $managerMock
             ->expects($this->once())
-            ->method('getPathResolver')
-            ->willReturn($pathResolverMock);
+            ->method('getUrlResolver')
+            ->willReturn($urlResolverMock);
 
         BinaryFlysystemFileManagerResponse::trustXSendfileTypeHeader();
         $response = BinaryFlysystemFileManagerResponse::create(
@@ -612,7 +613,7 @@ class BinaryFlysystemFileManagerResponseTest extends AbstractTests
         $this->assertEquals('foo', $response->headers->get('Accept-Ranges'));
     }
 
-    public function testResolveFileUrlOrPathWhenExternalUrlExist()
+    public function testResolveFilePath()
     {
         $fsMock = $this->generateFilesystemMock();
 
@@ -622,8 +623,8 @@ class BinaryFlysystemFileManagerResponseTest extends AbstractTests
             ->method('getFilesystem')
             ->willReturn($fsMock);
 
-        $extUrlResolver = $this->generateExtUrlResolverMock();
-        $extUrlResolver
+        $urlResolver = $this->generateUrlResolverMock();
+        $urlResolver
             ->expects($this->once())
             ->method('getUrl')
             ->willReturn('http://example.com/test.gif');
@@ -631,8 +632,8 @@ class BinaryFlysystemFileManagerResponseTest extends AbstractTests
         $managerMock = $this->getStandardManagerMock($fileMock, 1);
         $managerMock
             ->expects($this->once())
-            ->method('getExternalUrlResolver')
-            ->willReturn($extUrlResolver);
+            ->method('getUrlResolver')
+            ->willReturn($urlResolver);
 
         $response = BinaryFlysystemFileManagerResponse::create(
             $managerMock,
@@ -645,7 +646,7 @@ class BinaryFlysystemFileManagerResponseTest extends AbstractTests
         );
 
         $reflection = new \ReflectionClass(BinaryFlysystemFileManagerResponse::class);
-        $method = $reflection->getMethod('resolveFileUrlOrPath');
+        $method = $reflection->getMethod('resolveFilePath');
         $method->setAccessible(true);
 
         $this->assertEquals('http://example.com/test.gif', $method->invokeArgs($response, []));

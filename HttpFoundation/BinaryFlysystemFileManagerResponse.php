@@ -297,7 +297,7 @@ class BinaryFlysystemFileManagerResponse extends Response
         if (self::$trustXSendfileTypeHeader && $request->headers->has('X-Sendfile-Type')) {
             // Use X-Sendfile, do not send any content.
             $type = $request->headers->get('X-Sendfile-Type');
-            $path = $this->resolveFileUrlOrPath();
+            $path = $this->resolveFilePath();
 
             if (strtolower($type) === 'x-accel-redirect') {
                 // Do X-Accel-Mapping substitutions.
@@ -413,15 +413,11 @@ class BinaryFlysystemFileManagerResponse extends Response
      *
      * @return null|string
      */
-    protected function resolveFileUrlOrPath()
+    protected function resolveFilePath()
     {
         $adapter = $this->file->getFilesystem()->getAdapter();
 
-        if (null !== $extUrlManager = $this->manager->getExternalUrlResolver()) {
-            return $extUrlManager->getUrl($adapter, $this->file->getPath());
-        }
-
-        return $this->manager->getPathResolver()->getFullPath($adapter, $this->file->getPath());
+        return $this->manager->getUrlResolver()->getUrl($adapter, $this->file->getPath());
     }
 
     /**

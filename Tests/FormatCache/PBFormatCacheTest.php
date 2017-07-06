@@ -108,7 +108,7 @@ class PBFormatCacheTest extends AbstractTests
         $this->assertEquals('/uploads/media/400x400/01/1-photo.jpeg?v=1-0', $result);
     }
 
-    public function testGetMediaUrlIfFileExistAndHasExtUrl()
+    public function testGetMediaUrlIfFileExist()
     {
         $filesystemMock = $this->generateFilesystemMock();
         $filesystemMock
@@ -137,41 +137,6 @@ class PBFormatCacheTest extends AbstractTests
         );
 
         $this->assertEquals('http://example.com/photo.jpeg?v=1-0', $result);
-    }
-
-    public function testGetMediaUrlIfFileExistAndHasNotExtUrl()
-    {
-        $filesystemMock = $this->generateFilesystemMock();
-        $filesystemMock
-            ->expects($this->once())
-            ->method('has')
-            ->willReturn(true);
-
-        $managerMock = $this->generateStorageManagerMock();
-        $managerMock
-            ->expects($this->once())
-            ->method('getFilesystem')
-            ->willReturn($filesystemMock);
-        $managerMock
-            ->expects($this->once())
-            ->method('getFormatFilePath')
-            ->willReturn('400x400/01/1-photo.jpeg');
-        $managerMock
-            ->expects($this->once())
-            ->method('getUrl')
-            ->willReturn(null);
-
-        $formatCache = new PBFormatCache($managerMock, $this->formats, $this->proxyPath);
-        $result = $formatCache->getMediaUrl(
-            1,
-            'photo.jpeg',
-            json_encode($this->storageOptions),
-            '400x400',
-            1,
-            0
-        );
-
-        $this->assertEquals('/400x400/01/1-photo.jpeg?v=1-0', $result);
     }
 
     public function testAnalyzedMediaUrl()

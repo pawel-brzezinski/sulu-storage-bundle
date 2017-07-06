@@ -8,6 +8,7 @@ use PB\Bundle\SuluStorageBundle\Exception\AliasNotFoundException;
 use PB\Bundle\SuluStorageBundle\DependencyInjection\Compiler\StoragePass;
 use PB\Bundle\SuluStorageBundle\Manager\PBStorageManager;
 use PB\Bundle\SuluStorageBundle\Resolver\Exception\PathResolverNotDefinedException;
+use PB\Bundle\SuluStorageBundle\Resolver\Exception\UrlResolverNotDefinedException;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
@@ -37,6 +38,10 @@ class StoragePassTest extends AbstractCompilerPassTestCase
         $pathResolverDef->addTag('pb_sulu_storage.path_resolver', ['alias' => 'local']);
         $this->setDefinition('pb_sulu_storage.local.path_resolver', $pathResolverDef);
 
+        $urlResolver = new Definition();
+        $urlResolver->addTag('pb_sulu_storage.url_resolver', ['alias' => 'local']);
+        $this->setDefinition('pb_sulu_storage.local.url_resolver', $urlResolver);
+
         $this->compile();
 
         // Storage manager
@@ -55,6 +60,11 @@ class StoragePassTest extends AbstractCompilerPassTestCase
             new Reference('pb_sulu_storage.local.path_resolver')
         );
         $this->assertContainerBuilderHasServiceDefinitionWithArgument(
+            'pb_sulu_storage.master.storage_manager',
+            2,
+            new Reference('pb_sulu_storage.local.url_resolver')
+        );
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument(
             'pb_sulu_storage.replica.storage_manager',
             0,
             new Reference('oneup_flysystem.local_filesystem')
@@ -65,6 +75,11 @@ class StoragePassTest extends AbstractCompilerPassTestCase
             new Reference('pb_sulu_storage.local.path_resolver')
         );
         $this->assertContainerBuilderHasServiceDefinitionWithArgument(
+            'pb_sulu_storage.replica.storage_manager',
+            2,
+            new Reference('pb_sulu_storage.local.url_resolver')
+        );
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument(
             'pb_sulu_storage.format_cache.storage_manager',
             0,
             new Reference('oneup_flysystem.local_filesystem')
@@ -73,6 +88,11 @@ class StoragePassTest extends AbstractCompilerPassTestCase
             'pb_sulu_storage.format_cache.storage_manager',
             1,
             new Reference('pb_sulu_storage.local.path_resolver')
+        );
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument(
+            'pb_sulu_storage.format_cache.storage_manager',
+            2,
+            new Reference('pb_sulu_storage.local.url_resolver')
         );
 
         // Format cache
@@ -127,13 +147,42 @@ class StoragePassTest extends AbstractCompilerPassTestCase
         $pathResolverDef->addTag('pb_sulu_storage.path_resolver', ['alias' => 'local']);
         $this->setDefinition('pb_sulu_storage.local.path_resolver', $pathResolverDef);
 
+        $urlResolver = new Definition();
+        $urlResolver->addTag('pb_sulu_storage.url_resolver', ['alias' => 'local']);
+        $this->setDefinition('pb_sulu_storage.local.url_resolver', $urlResolver);
+
         $this->compile();
 
         // Storage
         $this->assertContainerBuilderHasServiceDefinitionWithArgument('sulu_media.storage',1, null);
     }
 
-    public function testCompileWithExternalUrlResolver()
+    public function testCompileWithPathResolverWithoutAlias()
+    {
+        $this->setDefinition('sulu_media.storage', new Definition());
+        $this->setDefinition('sulu_media.format_cache', new Definition());
+        $this->setParameter('sulu_media.image.formats', []);
+        $this->setParameter('sulu_media.format_cache.media_proxy_path', []);
+
+        $this->setDefinition('oneup_flysystem.local_filesystem', new Definition());
+
+        $this->setDefinition('pb_sulu_storage.master', new Definition());
+        $this->setParameter('pb_sulu_storage.master', ['filesystem' => 'local', 'type' => 'local']);
+        $this->setParameter('pb_sulu_storage.format_cache', ['filesystem' => 'local', 'type' => 'local']);
+
+        $pathResolverDef = new Definition();
+        $pathResolverDef->addTag('pb_sulu_storage.path_resolver');
+        $this->setDefinition('pb_sulu_storage.local.path_resolver', $pathResolverDef);
+
+        $urlResolver = new Definition();
+        $urlResolver->addTag('pb_sulu_storage.url_resolver', ['alias' => 'local']);
+        $this->setDefinition('pb_sulu_storage.local.url_resolver', $urlResolver);
+
+        $this->expectException(AliasNotFoundException::class);
+        $this->compile();
+    }
+
+    public function testCompileWithUrlResolverWithoutAlias()
     {
         $this->setDefinition('sulu_media.storage', new Definition());
         $this->setDefinition('sulu_media.format_cache', new Definition());
@@ -150,36 +199,9 @@ class StoragePassTest extends AbstractCompilerPassTestCase
         $pathResolverDef->addTag('pb_sulu_storage.path_resolver', ['alias' => 'local']);
         $this->setDefinition('pb_sulu_storage.local.path_resolver', $pathResolverDef);
 
-        $extUrlResolverDef = new Definition();
-        $extUrlResolverDef->addTag('pb_sulu_storage.external_url_resolver', ['alias' => 'local']);
-        $this->setDefinition('pb_sulu_storage.local.external_url_resolver', $extUrlResolverDef);
-
-        $this->compile();
-
-        // Storage Manager
-        $this->assertContainerBuilderHasServiceDefinitionWithArgument(
-            'pb_sulu_storage.master.storage_manager',
-            2,
-            new Reference('pb_sulu_storage.local.external_url_resolver')
-        );
-    }
-
-    public function testCompileWithExternalUrlResolverWithoutAlias()
-    {
-        $this->setDefinition('sulu_media.storage', new Definition());
-        $this->setDefinition('sulu_media.format_cache', new Definition());
-        $this->setParameter('sulu_media.image.formats', []);
-        $this->setParameter('sulu_media.format_cache.media_proxy_path', []);
-
-        $this->setDefinition('oneup_flysystem.local_filesystem', new Definition());
-
-        $this->setDefinition('pb_sulu_storage.master', new Definition());
-        $this->setParameter('pb_sulu_storage.master', ['filesystem' => 'local', 'type' => 'local']);
-        $this->setParameter('pb_sulu_storage.format_cache', ['filesystem' => 'local', 'type' => 'local']);
-
-        $resolverDef = new Definition();
-        $resolverDef->addTag('pb_sulu_storage.external_url_resolver');
-        $this->setDefinition('pb_sulu_storage.local.external_url_resolver', $resolverDef);
+        $urlResolver = new Definition();
+        $urlResolver->addTag('pb_sulu_storage.url_resolver');
+        $this->setDefinition('pb_sulu_storage.local.url_resolver', $urlResolver);
 
         $this->expectException(AliasNotFoundException::class);
         $this->compile();
@@ -214,6 +236,27 @@ class StoragePassTest extends AbstractCompilerPassTestCase
         $this->setParameter('pb_sulu_storage.format_cache', ['filesystem' => 'local', 'type' => 'local']);
 
         $this->expectException(PathResolverNotDefinedException::class);
+        $this->compile();
+    }
+
+    public function testCompileWithNotExistUrlResolver()
+    {
+        $this->setDefinition('sulu_media.storage', new Definition());
+        $this->setDefinition('sulu_media.format_cache', new Definition());
+        $this->setParameter('sulu_media.image.formats', []);
+        $this->setParameter('sulu_media.format_cache.media_proxy_path', []);
+
+        $this->setDefinition('oneup_flysystem.local_filesystem', new Definition());
+
+        $this->setDefinition('pb_sulu_storage.master', new Definition());
+        $this->setParameter('pb_sulu_storage.master', ['filesystem' => 'local', 'type' => 'local']);
+        $this->setParameter('pb_sulu_storage.format_cache', ['filesystem' => 'local', 'type' => 'local']);
+
+        $pathResolverDef = new Definition();
+        $pathResolverDef->addTag('pb_sulu_storage.path_resolver', ['alias' => 'local']);
+        $this->setDefinition('pb_sulu_storage.local.path_resolver', $pathResolverDef);
+
+        $this->expectException(UrlResolverNotDefinedException::class);
         $this->compile();
     }
 }

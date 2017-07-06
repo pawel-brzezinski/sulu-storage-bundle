@@ -7,51 +7,47 @@ use PB\Bundle\SuluStorageBundle\Tests\AbstractTests;
 
 class PBStorageManagerTest extends AbstractTests
 {
-    public function testConstructionWithExtUrlResolver()
+    public function testConstruction()
     {
         $fsMock = $this->generateFilesystemMock();
         $pathResolverMock = $this->generatePathResolverMock();
-        $extUrlResolverMock = $this->generateExtUrlResolverMock();
+        $urlResolverMock = $this->generateUrlResolverMock();
 
-        $manager = new PBStorageManager($fsMock, $pathResolverMock, $extUrlResolverMock);
+        $manager = new PBStorageManager($fsMock, $pathResolverMock, $urlResolverMock);
 
         $this->assertEquals($fsMock, $manager->getFilesystem());
         $this->assertEquals($pathResolverMock, $manager->getPathResolver());
-        $this->assertEquals($extUrlResolverMock, $manager->getUrlResolver());
+        $this->assertEquals($urlResolverMock, $manager->getUrlResolver());
     }
 
-    public function testConstructionWithoutExtUrlResolver()
+    public function testGetUrlWhereUrlIsNotNull()
     {
         $fsMock = $this->generateFilesystemMock();
         $pathResolverMock = $this->generatePathResolverMock();
 
-        $manager = new PBStorageManager($fsMock, $pathResolverMock);
-
-        $this->assertNull($manager->getUrlResolver());
-    }
-
-    public function testGetUrlWithExtUrlResolver()
-    {
-        $fsMock = $this->generateFilesystemMock();
-        $pathResolverMock = $this->generatePathResolverMock();
-
-        $extUrlResolverMock = $this->generateExtUrlResolverMock();
-        $extUrlResolverMock
+        $urlResolverMock = $this->generateUrlResolverMock();
+        $urlResolverMock
             ->expects($this->once())
             ->method('getUrl')
             ->willReturn('http://example.com/test.gif');
 
-        $manager = new PBStorageManager($fsMock, $pathResolverMock, $extUrlResolverMock);
+        $manager = new PBStorageManager($fsMock, $pathResolverMock, $urlResolverMock);
 
         $this->assertEquals('http://example.com/test.gif', $manager->getUrl('test.gif'));
     }
 
-    public function testGetUrlWithoutExtUrlResolver()
+    public function testGetUrlWhereUrlIsNull()
     {
         $fsMock = $this->generateFilesystemMock();
         $pathResolverMock = $this->generatePathResolverMock();
 
-        $manager = new PBStorageManager($fsMock, $pathResolverMock);
+        $urlResolverMock = $this->generateUrlResolverMock();
+        $urlResolverMock
+            ->expects($this->once())
+            ->method('getUrl')
+            ->willReturn(null);
+
+        $manager = new PBStorageManager($fsMock, $pathResolverMock, $urlResolverMock);
 
         $this->assertNull($manager->getUrl('test.gif'));
     }
@@ -60,8 +56,9 @@ class PBStorageManagerTest extends AbstractTests
     {
         $fsMock = $this->generateFilesystemMock();
         $pathResolverMock = $this->generatePathResolverMock();
+        $urlResolverMock = $this->generateUrlResolverMock();
 
-        $manager = new PBStorageManager($fsMock, $pathResolverMock);
+        $manager = new PBStorageManager($fsMock, $pathResolverMock, $urlResolverMock);
 
         $this->assertEquals('foo/test.gif', $manager->getFilePath('test.gif', 'foo'));
         $this->assertEquals('test.gif', $manager->getFilePath('test.gif'));
@@ -71,8 +68,9 @@ class PBStorageManagerTest extends AbstractTests
     {
         $fsMock = $this->generateFilesystemMock();
         $pathResolverMock = $this->generatePathResolverMock();
+        $urlResolverMock = $this->generateUrlResolverMock();
 
-        $manager = new PBStorageManager($fsMock, $pathResolverMock);
+        $manager = new PBStorageManager($fsMock, $pathResolverMock, $urlResolverMock);
 
         $expected = '400x400/foo/1-test.gif';
         $this->assertEquals($expected, $manager->getFormatFilePath(1, 'test.gif', '400x400', 'foo'));
@@ -85,8 +83,9 @@ class PBStorageManagerTest extends AbstractTests
     {
         $fsMock = $this->generateFilesystemMock();
         $pathResolverMock = $this->generatePathResolverMock();
+        $urlResolverMock = $this->generateUrlResolverMock();
 
-        $manager = new PBStorageManager($fsMock, $pathResolverMock, null, 10);
+        $manager = new PBStorageManager($fsMock, $pathResolverMock, $urlResolverMock, 10);
         $this->assertNotNull($manager->generateSegment());
     }
 
@@ -94,8 +93,9 @@ class PBStorageManagerTest extends AbstractTests
     {
         $fsMock = $this->generateFilesystemMock();
         $pathResolverMock = $this->generatePathResolverMock();
+        $urlResolverMock = $this->generateUrlResolverMock();
 
-        $manager = new PBStorageManager($fsMock, $pathResolverMock);
+        $manager = new PBStorageManager($fsMock, $pathResolverMock, $urlResolverMock);
         $this->assertNull($manager->generateSegment());
     }
 
@@ -107,8 +107,9 @@ class PBStorageManagerTest extends AbstractTests
             ->method('has')
             ->willReturn(false);
         $pathResolverMock = $this->generatePathResolverMock();
+        $urlResolverMock = $this->generateUrlResolverMock();
 
-        $manager = new PBStorageManager($fsMock, $pathResolverMock);
+        $manager = new PBStorageManager($fsMock, $pathResolverMock, $urlResolverMock);
 
         $this->assertEquals('test.gif', $manager->generateUniqueFileName('test.gif', 'foo'));
     }
@@ -125,8 +126,9 @@ class PBStorageManagerTest extends AbstractTests
             ->method('has')
             ->willReturn(false);
         $pathResolverMock = $this->generatePathResolverMock();
+        $urlResolverMock = $this->generateUrlResolverMock();
 
-        $manager = new PBStorageManager($fsMock, $pathResolverMock);
+        $manager = new PBStorageManager($fsMock, $pathResolverMock, $urlResolverMock);
 
         $this->assertEquals('test-1.gif', $manager->generateUniqueFileName('test.gif', 'foo'));
     }

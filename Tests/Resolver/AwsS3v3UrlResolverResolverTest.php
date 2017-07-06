@@ -5,10 +5,11 @@ namespace PB\Bundle\SuluStorageBundle\Tests\Resolver;
 use Aws\S3\S3Client;
 use League\Flysystem\Adapter\NullAdapter;
 use League\Flysystem\AwsS3v3\AwsS3Adapter;
-use PB\Bundle\SuluStorageBundle\Resolver\AwsS3v3ExternalUrlResolver;
+use PB\Bundle\SuluStorageBundle\Resolver\AwsS3v3UrlResolver;
+use PB\Bundle\SuluStorageBundle\Resolver\Exception\WrongFlysystemAdapterException;
 use PB\Bundle\SuluStorageBundle\Tests\AbstractTests;
 
-class AwsS3v3ExternalUrlResolverResolverTest extends AbstractTests
+class AwsS3v3UrlResolverResolverTest extends AbstractTests
 {
     public function testGetUrlWhenAdapterIsInstanceOfFlysystemAwsS3Adapter()
     {
@@ -40,7 +41,7 @@ class AwsS3v3ExternalUrlResolverResolverTest extends AbstractTests
             ->method('getClient')
             ->willReturn($awsClientMock);
 
-        $resolver = new AwsS3v3ExternalUrlResolver();
+        $resolver = new AwsS3v3UrlResolver();
 
         $this->assertEquals(
             'https://testbucket.s3.eu-central-1.amazonaws.com/prefix/foo/test.gif',
@@ -54,8 +55,9 @@ class AwsS3v3ExternalUrlResolverResolverTest extends AbstractTests
             ->disableOriginalConstructor()
             ->getMock();
 
-        $resolver = new AwsS3v3ExternalUrlResolver();
+        $resolver = new AwsS3v3UrlResolver();
 
-        $this->assertNull($resolver->getUrl($adapterMock, 'foo/test.gif'));
+        $this->expectException(WrongFlysystemAdapterException::class);
+        $resolver->getUrl($adapterMock, 'foo/test.gif');
     }
 }

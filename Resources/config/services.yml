@@ -13,7 +13,7 @@ services:
     # URL resolvers
     pb_sulu_storage.local.url_resolver:
         class: PB\Bundle\SuluStorageBundle\Resolver\LocalUrlResolver
-        arguments: ['%kernel.project_dir%/web']
+        arguments: ['%kernel.root_dir%/../web']
         tags:
             - { name: pb_sulu_storage.url_resolver, alias: local }
 

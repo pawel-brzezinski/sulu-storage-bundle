@@ -44,7 +44,7 @@ class PBStorageManager
     public function __construct(
         Filesystem $filesystem,
         PathResolverInterface $pathResolver,
-        UrlResolverInterface $urlResolver = null,
+        UrlResolverInterface $urlResolver,
         $segments = null
     )
     {

@@ -44,6 +44,6 @@ class LocalUrlResolver implements UrlResolverInterface
             throw new WrongFlysystemAdapterException(Local::class);
         }
 
-        return str_replace($this->webDir, '', realpath($adapter->applyPathPrefix($fileName)));
+        return str_replace($this->webDir, '', $adapter->applyPathPrefix($fileName));
     }
 }

@@ -24,9 +24,10 @@ class PBStorageTest extends AbstractTests
         $rFsMock = $this->generateFilesystemMock();
 
         $pathResolverMock = $this->generatePathResolverMock();
+        $urlResolverMock = $this->generateUrlResolverMock();
 
-        $mStorageManager = new PBStorageManager($mFsMock, $pathResolverMock, null, 1);
-        $rStorageManager = new PBStorageManager($rFsMock, $pathResolverMock, null);
+        $mStorageManager = new PBStorageManager($mFsMock, $pathResolverMock, $urlResolverMock, 1);
+        $rStorageManager = new PBStorageManager($rFsMock, $pathResolverMock, $urlResolverMock);
 
         $storage = new PBStorage($mStorageManager, $rStorageManager);
         $saveResult = $storage->save($this->filePath, 'test.gif', 1);
@@ -38,7 +39,8 @@ class PBStorageTest extends AbstractTests
     {
         $mFsMock = $this->generateFilesystemMock();
         $pathResolverMock = $this->generatePathResolverMock();
-        $mStorageManager = new PBStorageManager($mFsMock, $pathResolverMock, null, 1);
+        $urlResolverMock = $this->generateUrlResolverMock();
+        $mStorageManager = new PBStorageManager($mFsMock, $pathResolverMock, $urlResolverMock, 1);
         $storage = new PBStorage($mStorageManager);
 
         $this->expectException(\RuntimeException::class);
@@ -58,7 +60,8 @@ class PBStorageTest extends AbstractTests
             ->willReturn(file_get_contents($this->filePath));
 
         $pathResolverMock = $this->generatePathResolverMock();
-        $mStorageManager = new PBStorageManager($mFsMock, $pathResolverMock, null, 1);
+        $urlResolverMock = $this->generateUrlResolverMock();
+        $mStorageManager = new PBStorageManager($mFsMock, $pathResolverMock, $urlResolverMock, 1);
         $storage = new PBStorage($mStorageManager);
 
         $result = $storage->loadAsString('test.gif', 1, json_encode(['segment' => '1', 'fileName' => 'test.gif']));
@@ -75,7 +78,8 @@ class PBStorageTest extends AbstractTests
             ->willReturn(false);
 
         $pathResolverMock = $this->generatePathResolverMock();
-        $mStorageManager = new PBStorageManager($mFsMock, $pathResolverMock, null, 1);
+        $urlResolverMock = $this->generateUrlResolverMock();
+        $mStorageManager = new PBStorageManager($mFsMock, $pathResolverMock, $urlResolverMock, 1);
         $storage = new PBStorage($mStorageManager);
 
         $this->expectException(ImageProxyMediaNotFoundException::class);
@@ -105,9 +109,10 @@ class PBStorageTest extends AbstractTests
             ->willReturn(true);
 
         $pathResolverMock = $this->generatePathResolverMock();
+        $urlResolverMock = $this->generateUrlResolverMock();
 
-        $mStorageManager = new PBStorageManager($mFsMock, $pathResolverMock, null, 1);
-        $rStorageManager = new PBStorageManager($rFsMock, $pathResolverMock);
+        $mStorageManager = new PBStorageManager($mFsMock, $pathResolverMock, $urlResolverMock, 1);
+        $rStorageManager = new PBStorageManager($rFsMock, $pathResolverMock, $urlResolverMock);
         $storage = new PBStorage($mStorageManager, $rStorageManager);
 
         $storageOption = json_encode(['segment' => '1', 'fileName' => 'test.gif']);
@@ -127,8 +132,9 @@ class PBStorageTest extends AbstractTests
             ->willReturn(true);
 
         $pathResolverMock = $this->generatePathResolverMock();
+        $urlResolverMock = $this->generateUrlResolverMock();
 
-        $mStorageManager = new PBStorageManager($mFsMock, $pathResolverMock, null, 1);
+        $mStorageManager = new PBStorageManager($mFsMock, $pathResolverMock, $urlResolverMock, 1);
         $storage = new PBStorage($mStorageManager);
 
         $storageOption = json_encode(['segment' => '1', 'fileName' => 'test.gif']);
@@ -144,8 +150,9 @@ class PBStorageTest extends AbstractTests
             ->willReturn(false);
 
         $pathResolverMock = $this->generatePathResolverMock();
+        $urlResolverMock = $this->generateUrlResolverMock();
 
-        $mStorageManager = new PBStorageManager($mFsMock, $pathResolverMock, null, 1);
+        $mStorageManager = new PBStorageManager($mFsMock, $pathResolverMock, $urlResolverMock, 1);
         $storage = new PBStorage($mStorageManager);
 
         $storageOption = json_encode(['segment' => '1', 'fileName' => 'test.gif']);
@@ -156,7 +163,8 @@ class PBStorageTest extends AbstractTests
     {
         $mFsMock = $this->generateFilesystemMock();
         $pathResolverMock = $this->generatePathResolverMock();
-        $mStorageManager = new PBStorageManager($mFsMock, $pathResolverMock, null, 1);
+        $urlResolverMock = $this->generateUrlResolverMock();
+        $mStorageManager = new PBStorageManager($mFsMock, $pathResolverMock, $urlResolverMock, 1);
         $storage = new PBStorage($mStorageManager);
 
         $storageOption = json_encode(['segment' => '1']);
@@ -176,8 +184,9 @@ class PBStorageTest extends AbstractTests
             ->willReturn(false);
 
         $pathResolverMock = $this->generatePathResolverMock();
+        $urlResolverMock = $this->generateUrlResolverMock();
 
-        $mStorageManager = new PBStorageManager($mFsMock, $pathResolverMock, null, 1);
+        $mStorageManager = new PBStorageManager($mFsMock, $pathResolverMock, $urlResolverMock, 1);
         $storage = new PBStorage($mStorageManager);
 
         $storageOption = json_encode(['segment' => '1', 'fileName' => 'test.gif']);
@@ -190,13 +199,13 @@ class PBStorageTest extends AbstractTests
     {
         $mFsMock = $this->generateFilesystemMock();
         $pathResolverMock = $this->generatePathResolverMock();
-        $extUrlResolverMock = $this->generateExtUrlResolverMock();
-        $extUrlResolverMock
+        $urlResolverMock = $this->generateUrlResolverMock();
+        $urlResolverMock
             ->expects($this->once())
             ->method('getUrl')
             ->willReturn('http://exmaple.com/1/test.gif');
 
-        $mStorageManager = new PBStorageManager($mFsMock, $pathResolverMock, $extUrlResolverMock, 1);
+        $mStorageManager = new PBStorageManager($mFsMock, $pathResolverMock, $urlResolverMock, 1);
         $storage = new PBStorage($mStorageManager);
 
         $result = $storage->getMediaUrl('test.gif', json_encode(['segment' => '1', 'fileName' => 'test.gif']));
@@ -218,7 +227,8 @@ class PBStorageTest extends AbstractTests
             ->willReturn($resource);
 
         $pathResolverMock = $this->generatePathResolverMock();
-        $mStorageManager = new PBStorageManager($mFsMock, $pathResolverMock, null, 1);
+        $urlResolverMock = $this->generateUrlResolverMock();
+        $mStorageManager = new PBStorageManager($mFsMock, $pathResolverMock, $urlResolverMock, 1);
         $storage = new PBStorage($mStorageManager);
 
 
@@ -237,7 +247,8 @@ class PBStorageTest extends AbstractTests
             ->willReturn(false);
 
         $pathResolverMock = $this->generatePathResolverMock();
-        $mStorageManager = new PBStorageManager($mFsMock, $pathResolverMock, null, 1);
+        $urlResolverMock = $this->generateUrlResolverMock();
+        $mStorageManager = new PBStorageManager($mFsMock, $pathResolverMock, $urlResolverMock, 1);
         $storage = new PBStorage($mStorageManager);
 
         $this->assertNull($storage->loadStream('test.gif', ''));
@@ -262,7 +273,8 @@ class PBStorageTest extends AbstractTests
             ->willReturn($fileMock);
 
         $pathResolverMock = $this->generatePathResolverMock();
-        $mStorageManager = new PBStorageManager($mFsMock, $pathResolverMock, null, 1);
+        $urlResolverMock = $this->generateUrlResolverMock();
+        $mStorageManager = new PBStorageManager($mFsMock, $pathResolverMock, $urlResolverMock, 1);
         $storage = new PBStorage($mStorageManager);
         $result = $storage->getFile('test.gif', json_encode(['segment' => '1', 'fileName' => 'test.gif']));
 
@@ -288,7 +300,8 @@ class PBStorageTest extends AbstractTests
             ->willReturn($fileMock);
 
         $pathResolverMock = $this->generatePathResolverMock();
-        $mStorageManager = new PBStorageManager($mFsMock, $pathResolverMock, null, 1);
+        $urlResolverMock = $this->generateUrlResolverMock();
+        $mStorageManager = new PBStorageManager($mFsMock, $pathResolverMock, $urlResolverMock, 1);
         $storage = new PBStorage($mStorageManager);
         $result = $storage->getFile('test.gif', json_encode(['segment' => '1', 'fileName' => 'test.gif']));
 
@@ -304,7 +317,8 @@ class PBStorageTest extends AbstractTests
             ->willReturn(false);
 
         $pathResolverMock = $this->generatePathResolverMock();
-        $mStorageManager = new PBStorageManager($mFsMock, $pathResolverMock, null, 1);
+        $urlResolverMock = $this->generateUrlResolverMock();
+        $mStorageManager = new PBStorageManager($mFsMock, $pathResolverMock, $urlResolverMock, 1);
         $storage = new PBStorage($mStorageManager);
         $result = $storage->getFile('test.gif', json_encode(['segment' => '1', 'fileName' => 'test.gif']));
 
@@ -330,7 +344,8 @@ class PBStorageTest extends AbstractTests
             ->willReturn($fileMock);
 
         $pathResolverMock = $this->generatePathResolverMock();
-        $mStorageManager = new PBStorageManager($mFsMock, $pathResolverMock, null, 1);
+        $urlResolverMock = $this->generateUrlResolverMock();
+        $mStorageManager = new PBStorageManager($mFsMock, $pathResolverMock, $urlResolverMock, 1);
         $storage = new PBStorage($mStorageManager);
         $result = $storage->getFileManager('test.gif', json_encode(['segment' => '1', 'fileName' => 'test.gif']));
 
@@ -346,7 +361,8 @@ class PBStorageTest extends AbstractTests
             ->willReturn(false);
 
         $pathResolverMock = $this->generatePathResolverMock();
-        $mStorageManager = new PBStorageManager($mFsMock, $pathResolverMock, null, 1);
+        $urlResolverMock = $this->generateUrlResolverMock();
+        $mStorageManager = new PBStorageManager($mFsMock, $pathResolverMock, $urlResolverMock, 1);
         $storage = new PBStorage($mStorageManager);
         $result = $storage->getFileManager('test.gif', json_encode(['segment' => '1', 'fileName' => 'test.gif']));
 

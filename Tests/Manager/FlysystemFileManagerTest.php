@@ -7,26 +7,16 @@ use PB\Bundle\SuluStorageBundle\Tests\AbstractTests;
 
 class FlysystemFileManagerTest extends AbstractTests
 {
-    public function testConstructionWithExtUrlResolver()
+    public function testConstruction()
     {
         $fileMock = $this->generateFlysystemFileMock();
         $pathResolverMock = $this->generatePathResolverMock();
-        $extUrlResolverMock = $this->generateExtUrlResolverMock();
+        $urlResolverMock = $this->generateUrlResolverMock();
 
-        $manager = new FlysystemFileManager($fileMock, $pathResolverMock, $extUrlResolverMock);
+        $manager = new FlysystemFileManager($fileMock, $pathResolverMock, $urlResolverMock);
 
         $this->assertEquals($fileMock, $manager->getFile());
         $this->assertEquals($pathResolverMock, $manager->getPathResolver());
-        $this->assertEquals($extUrlResolverMock, $manager->getExternalUrlResolver());
-    }
-
-    public function testConstructionWithoutExtUrlResolver()
-    {
-        $fileMock = $this->generateFlysystemFileMock();
-        $pathResolverMock = $this->generatePathResolverMock();
-
-        $manager = new FlysystemFileManager($fileMock, $pathResolverMock);
-
-        $this->assertNull($manager->getExternalUrlResolver());
+        $this->assertEquals($urlResolverMock, $manager->getUrlResolver());
     }
 }

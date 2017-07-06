@@ -4,7 +4,7 @@ namespace PB\Bundle\SuluStorageBundle\Manager;
 
 use League\Flysystem\File;
 use PB\Bundle\SuluStorageBundle\Resolver\PathResolverInterface;
-use PB\Bundle\SuluStorageBundle\Resolver\ExternalUrlResolverInterface;
+use PB\Bundle\SuluStorageBundle\Resolver\UrlResolverInterface;
 
 /**
  * Manager for Flysystem file item.
@@ -24,25 +24,25 @@ class FlysystemFileManager implements FlysystemFileManagerInterface
     protected $pathResolver;
 
     /**
-     * @var ExternalUrlResolverInterface
+     * @var UrlResolverInterface
      */
-    protected $extUrlResolver;
+    protected $urlResolver;
 
     /**
      * FlysystemFileManager constructor.
      *
      * @param File $file
      * @param PathResolverInterface $pathResolver
-     * @param ExternalUrlResolverInterface|null $externalUrlResolver
+     * @param UrlResolverInterface $urlResolver
      */
     public function __construct(
         File $file,
         PathResolverInterface $pathResolver,
-        ExternalUrlResolverInterface $externalUrlResolver = null
+        UrlResolverInterface $urlResolver
     ) {
         $this->file = $file;
         $this->pathResolver = $pathResolver;
-        $this->extUrlResolver = $externalUrlResolver;
+        $this->urlResolver = $urlResolver;
     }
 
     /**
@@ -68,10 +68,10 @@ class FlysystemFileManager implements FlysystemFileManagerInterface
     /**
      * {@inheritdoc}
      *
-     * @return null|ExternalUrlResolverInterface
+     * @return null|UrlResolverInterface
      */
-    public function getExternalUrlResolver()
+    public function getUrlResolver()
     {
-        return $this->extUrlResolver;
+        return $this->urlResolver;
     }
 }
