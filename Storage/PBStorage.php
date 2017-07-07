@@ -137,6 +137,16 @@ class PBStorage implements StorageInterface, PBStorageInterface
     /**
      * {@inheritdoc}
      *
+     * @return bool
+     */
+    public function isRemote()
+    {
+        return null !== $this->masterManager->getUrlResolver();
+    }
+
+    /**
+     * {@inheritdoc}
+     *
      * @param string $fileName
      * @param null|string $storageOption
      *

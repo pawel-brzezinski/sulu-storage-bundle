@@ -24,14 +24,24 @@ abstract class AbstractPathResolver implements PathResolverInterface
      */
     public function getFullPath(AdapterInterface $adapter, $fileName)
     {
-        if ($adapter instanceof CachedAdapter) {
-            return $this->getFullPath($adapter->getAdapter(), $fileName);
-        }
+        $adapter = $this->extractAdapter($adapter);
 
         if (!$adapter instanceof AbstractAdapter) {
             return null;
         }
 
         return $adapter->applyPathPrefix($fileName);
+    }
+
+    /**
+     * Extract adapter if it is cached adapter.
+     *
+     * @param AdapterInterface $adapter
+     *
+     * @return AdapterInterface
+     */
+    protected function extractAdapter(AdapterInterface $adapter)
+    {
+        return $adapter instanceof CachedAdapter ? $adapter->getAdapter() : $adapter;
     }
 }

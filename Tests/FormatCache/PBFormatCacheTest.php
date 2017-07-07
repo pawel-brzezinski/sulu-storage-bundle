@@ -160,6 +160,11 @@ class PBFormatCacheTest extends AbstractTests
             ->expects($this->once())
             ->method('getUrl')
             ->willReturn(null);
+        $managerMock
+            ->expects($this->once())
+            ->method('getRelativePath')
+            ->with('400x400/01/1-photo.jpeg')
+            ->willReturn('/uploads/400x400/01/1-photo.jpeg');
 
         $formatCache = new PBFormatCache($managerMock, $this->formats, $this->proxyPath);
         $result = $formatCache->getMediaUrl(
@@ -171,7 +176,7 @@ class PBFormatCacheTest extends AbstractTests
             0
         );
 
-        $this->assertEquals('/400x400/01/1-photo.jpeg?v=1-0', $result);
+        $this->assertEquals('/uploads/400x400/01/1-photo.jpeg?v=1-0', $result);
     }
 
     public function testAnalyzedMediaUrl()

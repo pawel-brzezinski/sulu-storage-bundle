@@ -12,5 +12,16 @@ use League\Flysystem\AwsS3v3\AwsS3Adapter;
  */
 class AwsS3v3PathResolver extends AbstractPathResolver
 {
-
+    /**
+     * {@inheritdoc}
+     *
+     * @param AdapterInterface $adapter
+     * @param string $fileName
+     *
+     * @return null|string
+     */
+    public function getRelativePath(AdapterInterface $adapter, $fileName)
+    {
+        return $this->getFullPath($adapter, $fileName);
+    }
 }

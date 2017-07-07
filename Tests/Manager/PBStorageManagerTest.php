@@ -56,6 +56,20 @@ class PBStorageManagerTest extends AbstractTests
         $this->assertNull($manager->getUrl('test.gif'));
     }
 
+    public function testGetRelativePath()
+    {
+        $fsMock = $this->generateFilesystemMock();
+        $pathResolverMock = $this->generatePathResolverMock();
+        $pathResolverMock
+            ->expects($this->once())
+            ->method('getRelativePath')
+            ->willReturn('/uploads/test.gif');
+
+        $manager = new PBStorageManager($fsMock, $pathResolverMock);
+
+        $this->assertEquals('/uploads/test.gif', $manager->getRelativePath('test.gif'));
+    }
+
     public function testGetFilePath()
     {
         $fsMock = $this->generateFilesystemMock();

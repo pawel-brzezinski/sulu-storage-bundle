@@ -101,6 +101,18 @@ class PBStorageManager
     }
 
     /**
+     * Get relative path.
+     *
+     * @param string $fileName
+     *
+     * @return string
+     */
+    public function getRelativePath($fileName)
+    {
+        return $this->pathResolver->getRelativePath($this->filesystem->getAdapter(), $fileName);
+    }
+
+    /**
      * Get file path with folder.
      *
      * @param string $fileName

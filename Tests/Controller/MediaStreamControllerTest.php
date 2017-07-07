@@ -34,6 +34,10 @@ class MediaStreamControllerTest extends AbstractTests
             ->willReturn(true);
         $storage
             ->expects($this->once())
+            ->method('isRemote')
+            ->willReturn(false);
+        $storage
+            ->expects($this->once())
             ->method('getFileManager')
             ->willReturn($fileManager);
 
@@ -52,6 +56,10 @@ class MediaStreamControllerTest extends AbstractTests
             ->willReturn(true);
         $storage
             ->expects($this->once())
+            ->method('isRemote')
+            ->willReturn(true);
+        $storage
+            ->expects($this->once())
             ->method('getMediaUrl')
             ->willReturn('http://example.com/test.gif');
 
@@ -59,17 +67,6 @@ class MediaStreamControllerTest extends AbstractTests
 
         $this->assertInstanceOf(RedirectResponse::class, $response);
         $this->assertEquals('http://example.com/test.gif', $response->getTargetUrl());
-    }
-
-    public function testGetFileResponseIfFileNameNotExistInStorageOptions()
-    {
-        $storageManager = $this->generateStorageManagerMock();
-        $storage = $this->generateStorageMock($storageManager);
-
-        $response = $this->callGetFileResponseMethod($storage, true);
-
-        $this->assertInstanceOf(Response::class, $response);
-        $this->assertEquals('404', $response->getStatusCode());
     }
 
     public function testGetFileResponseIfFileNotExist()

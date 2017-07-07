@@ -8,7 +8,7 @@ use League\Flysystem\AwsS3v3\AwsS3Adapter;
 use PB\Bundle\SuluStorageBundle\Resolver\AwsS3v3ExternalUrlResolver;
 use PB\Bundle\SuluStorageBundle\Tests\AbstractTests;
 
-class AwsS3v3ExternalUrlResolverResolverTest extends AbstractTests
+class AwsS3v3ExternalUrlResolverTest extends AbstractTests
 {
     public function testGetUrlWhenAdapterIsInstanceOfFlysystemAwsS3Adapter()
     {

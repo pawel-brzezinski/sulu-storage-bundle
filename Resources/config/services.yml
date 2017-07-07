@@ -4,6 +4,8 @@ services:
         class: PB\Bundle\SuluStorageBundle\Resolver\LocalPathResolver
         tags:
             - { name: pb_sulu_storage.path_resolver, alias: local }
+        calls:
+            - ['setAbsolutePathPrefix', ['%kernel.project_dir%/web']]
 
     pb_sulu_storage.s3.path_resolver:
         class: PB\Bundle\SuluStorageBundle\Resolver\AwsS3v3PathResolver

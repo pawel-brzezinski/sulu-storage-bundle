@@ -20,4 +20,14 @@ interface PathResolverInterface
      * @return string
      */
     public function getFullPath(AdapterInterface $adapter, $fileName);
+
+    /**
+     * Get relative path to file.
+     *
+     * @param AdapterInterface $adapter
+     * @param string $fileName
+     *
+     * @return string
+     */
+    public function getRelativePath(AdapterInterface $adapter, $fileName);
 }

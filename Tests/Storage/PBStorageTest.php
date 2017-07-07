@@ -186,6 +186,29 @@ class PBStorageTest extends AbstractTests
         $this->assertFalse($storage->isFileExist('test.gif', $storageOption));
     }
 
+    public function testIsRemoteIfExternalUrlResolverExists()
+    {
+        $fsMock = $this->generateFilesystemMock();
+        $pathResolverMock = $this->generatePathResolverMock();
+        $urlResolverMock = $this->generateExtUrlResolverMock();
+
+        $storageManager = new PBStorageManager($fsMock, $pathResolverMock, $urlResolverMock);
+        $storage = new PBStorage($storageManager);
+
+        $this->assertTrue($storage->isRemote());
+    }
+
+    public function testIsRemoteIfExternalUrlResolverNotExists()
+    {
+        $fsMock = $this->generateFilesystemMock();
+        $pathResolverMock = $this->generatePathResolverMock();
+
+        $storageManager = new PBStorageManager($fsMock, $pathResolverMock);
+        $storage = new PBStorage($storageManager);
+
+        $this->assertFalse($storage->isRemote());
+    }
+
     public function testGetMediaUrl()
     {
         $mFsMock = $this->generateFilesystemMock();

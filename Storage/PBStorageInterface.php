@@ -22,6 +22,13 @@ interface PBStorageInterface
     public function isFileExist($fileName, $storageOption = null);
 
     /**
+     * Check if storage use remote adapter.
+     *
+     * @return bool
+     */
+    public function isRemote();
+
+    /**
      * Get media external url.
      *
      * @param string $fileName

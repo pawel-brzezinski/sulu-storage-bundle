@@ -32,7 +32,7 @@ abstract class AbstractTests extends TestCase
     {
         $mock = $this->getMockBuilder(PBStorage::class)
             ->setConstructorArgs([$masterManager, $replicaManager])
-            ->setMethods(['getMediaUrl', 'getFileManager', 'isFileExist'])
+            ->setMethods(['getMediaUrl', 'getFileManager', 'isFileExist', 'isRemote'])
             ->getMock();
 
         return $mock;
@@ -45,7 +45,7 @@ abstract class AbstractTests extends TestCase
     {
         $mock = $this->getMockBuilder(PBStorageManager::class)
             ->disableOriginalConstructor()
-            ->setMethods(['getFilesystem', 'getFormatFilePath', 'getUrl'])
+            ->setMethods(['getFilesystem', 'getFormatFilePath', 'getUrl', 'getRelativePath'])
             ->getMock();
 
         return $mock;
@@ -110,7 +110,7 @@ abstract class AbstractTests extends TestCase
     {
         $mock = $this->getMockBuilder(PathResolverInterface::class)
             ->disableOriginalConstructor()
-            ->setMethods(['getFullPath'])
+            ->setMethods(['getFullPath', 'getRelativePath'])
             ->getMock();
 
         return $mock;

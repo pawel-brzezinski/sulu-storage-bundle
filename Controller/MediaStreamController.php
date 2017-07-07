@@ -2,7 +2,7 @@
 
 namespace PB\Bundle\SuluStorageBundle\Controller;
 
-use PB\Bundle\SuluStorageBundle\HttpFoundation\BinaryFlysystemFileManagerResponse;
+use PB\Bundle\SuluStorageBundle\HttpFoundation\BinaryFlysystemFileManagerResponse as FileManagerResponse;
 use PB\Bundle\SuluStorageBundle\Storage\PBStorageInterface;
 use Sulu\Bundle\MediaBundle\Controller\MediaStreamController as SuluMediaStreamController;
 use Sulu\Bundle\MediaBundle\Entity\FileVersion;
@@ -43,9 +43,7 @@ class MediaStreamController extends SuluMediaStreamController
             return new Response('File not found', 404);
         }
 
-        $mediaUrl = $storage->getMediaUrl($fileName, $storageOptions);
-
-        if ($mediaUrl) {
+        if ($storage->isRemote() && null !== $mediaUrl = $storage->getMediaUrl($fileName, $storageOptions)) {
             return new RedirectResponse($mediaUrl);
         }
 
@@ -55,18 +53,6 @@ class MediaStreamController extends SuluMediaStreamController
             return new Response('File not found', 404);
         }
 
-        $response = new BinaryFlysystemFileManagerResponse(
-            $fileManager,
-            200,
-            [],
-            true,
-            $dispositionType,
-            false,
-            true,
-            $cleaner,
-            $locale
-        );
-
-        return $response;
+        return new FileManagerResponse($fileManager, 200, [], true, $dispositionType, false, true, $cleaner, $locale);
     }
 }
