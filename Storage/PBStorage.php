@@ -187,9 +187,7 @@ class PBStorage implements StorageInterface, PBStorageInterface
      */
     public function getFile($fileName, $storageOption = null)
     {
-        $storageOption = $storageOption ? json_decode($storageOption) : new \stdClass();
-        $segment = isset($storageOption->segment) ? $storageOption->segment : null;
-        $filePath = $this->masterManager->getFilePath($fileName, $segment);
+        $filePath = $this->generateFilePath($fileName, $storageOption);
 
         if (!$this->masterManager->getFilesystem()->has($filePath)) {
             return null;
