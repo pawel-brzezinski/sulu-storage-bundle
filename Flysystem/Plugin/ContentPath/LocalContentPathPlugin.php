@@ -3,6 +3,7 @@
 namespace PB\Bundle\SuluStorageBundle\Flysystem\Plugin\ContentPath;
 
 use League\Flysystem\Adapter\Local as LocalAdapter;
+use League\Flysystem\Cached\CachedAdapter;
 use PB\Bundle\SuluStorageBundle\Flysystem\Plugin\AbstractContentPathPlugin;
 
 /**
@@ -32,7 +33,13 @@ class LocalContentPathPlugin extends AbstractContentPathPlugin
      */
     public function handle($path, $host = null)
     {
-        $path = $this->adapter->applyPathPrefix($path);
+        $adapter = $this->adapter;
+
+        if ($adapter instanceof CachedAdapter) {
+            $adapter = $adapter->getAdapter();
+        }
+
+        $path = $adapter->applyPathPrefix($path);
 
         if (null !== $host) {
             $path = rtrim($host, '/').'/'.ltrim($path, '/');

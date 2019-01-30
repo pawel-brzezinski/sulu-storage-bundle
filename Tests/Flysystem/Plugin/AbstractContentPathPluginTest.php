@@ -4,6 +4,8 @@ namespace PB\Bundle\SuluStorageBundle\Tests\Flysystem\Plugin;
 
 use League\Flysystem\Adapter\NullAdapter;
 use League\Flysystem\AdapterInterface;
+use League\Flysystem\Cached\CachedAdapter;
+use League\Flysystem\Cached\CacheInterface;
 use League\Flysystem\Filesystem;
 use League\Flysystem\FilesystemInterface;
 use PB\Bundle\SuluStorageBundle\Flysystem\Exception\InvalidAdapterException;
@@ -19,10 +21,32 @@ use Prophecy\Prophecy\ObjectProphecy;
  */
 class AbstractContentPathPluginTest extends TestCase
 {
-    public function testSetFilesystem()
+    public function setFilesystemDataProvider()
+    {
+        $cMock = $this->prophesize(CacheInterface::class);
+
+        $nullAdapter = new NullAdapter();
+        $cachedAdapter = new CachedAdapter($nullAdapter, $cMock->reveal());
+
+        return [
+            'non-cached adapter' => [$nullAdapter],
+            'cached adapter' => [$cachedAdapter],
+        ];
+    }
+
+    /**
+     * @dataProvider setFilesystemDataProvider
+     *
+     * @param AdapterInterface $adapter
+     *
+     * @throws InvalidAdapterException
+     * @throws InvalidFilesystemException
+     * @throws \ReflectionException
+     */
+    public function testSetFilesystem(AdapterInterface $adapter)
     {
         // Given
-        $adapter = new NullAdapter();
+
         /** @var ObjectProphecy|Filesystem $fsMock */
         $fsMock = $this->prophesize(Filesystem::class);
 

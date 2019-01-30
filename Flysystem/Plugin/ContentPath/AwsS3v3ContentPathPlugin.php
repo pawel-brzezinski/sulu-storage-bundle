@@ -3,6 +3,7 @@
 namespace PB\Bundle\SuluStorageBundle\Flysystem\Plugin\ContentPath;
 
 use League\Flysystem\AwsS3v3\AwsS3Adapter;
+use League\Flysystem\Cached\CachedAdapter;
 use PB\Bundle\SuluStorageBundle\Flysystem\Plugin\AbstractContentPathPlugin;
 
 /**
@@ -31,9 +32,15 @@ class AwsS3v3ContentPathPlugin extends AbstractContentPathPlugin
      */
     public function handle($path)
     {
-        $path = $this->adapter->applyPathPrefix($path);
-        $bucket = $this->adapter->getBucket();
+        $adapter = $this->adapter;
 
-        return $this->adapter->getClient()->getObjectUrl($bucket, $path);
+        if ($adapter instanceof CachedAdapter) {
+            $adapter = $adapter->getAdapter();
+        }
+
+        $path = $adapter->applyPathPrefix($path);
+        $bucket = $adapter->getBucket();
+
+        return $adapter->getClient()->getObjectUrl($bucket, $path);
     }
 }

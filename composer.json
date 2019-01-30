@@ -32,6 +32,7 @@
         "phpunit/phpunit": "^5.7",
         "matthiasnoback/symfony-dependency-injection-test": "^1.2",
         "nyholm/symfony-bundle-test": "^1.4",
-        "league/flysystem-aws-s3-v3": "^1.0"
+        "league/flysystem-aws-s3-v3": "^1.0",
+        "league/flysystem-cached-adapter": "^1.0"
     }
 }

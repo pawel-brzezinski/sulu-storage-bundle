@@ -4,6 +4,7 @@ namespace PB\Bundle\SuluStorageBundle\Flysystem\Plugin;
 
 use League\Flysystem\Adapter\NullAdapter;
 use League\Flysystem\AdapterInterface;
+use League\Flysystem\Cached\CachedAdapter;
 use League\Flysystem\Filesystem;
 use League\Flysystem\FilesystemInterface;
 use League\Flysystem\PluginInterface;
@@ -47,7 +48,7 @@ abstract class AbstractContentPathPlugin implements PluginInterface
 
         $adapter = $filesystem->getAdapter();
 
-        if (!$adapter instanceof $this->supportedAdapter) {
+        if (!$adapter instanceof $this->supportedAdapter && !$adapter instanceof CachedAdapter) {
             throw new InvalidAdapterException(get_class($adapter), $this->supportedAdapter);
         }
 
