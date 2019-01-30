@@ -7,6 +7,11 @@ services:
         public: false
         lazy: true
 
+    pb_sulu_storage.flysystem.awss3v3.content_path.plugin:
+        class: PB\Bundle\SuluStorageBundle\Flysystem\Plugin\ContentPath\AwsS3v3ContentPathPlugin
+        public: false
+        lazy: true
+
     ############
     # Overlays #
     ############
