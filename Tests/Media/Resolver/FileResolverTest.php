@@ -42,12 +42,13 @@ class FileResolverTest extends TestCase
     public function constructDataProvider()
     {
         $fsp = $this->prophesize(FilesystemProviderInterface::class)->reveal();
+        $pc = $this->prophesize(PathCleanupInterface::class)->reveal();
         $logger = $this->prophesize(LoggerInterface::class)->reveal();
         $nullLogger = new NullLogger();
 
         return [
-            'default logger parameter' => [$fsp, $nullLogger, $fsp, null],
-            'custom logger parameter' => [$fsp, $logger, $fsp, $logger],
+            'default logger parameter' => [$fsp, $pc, $nullLogger, $fsp, $pc, null],
+            'custom logger parameter' => [$fsp, $pc, $logger, $fsp, $pc, $logger],
         ];
     }
 
@@ -55,16 +56,18 @@ class FileResolverTest extends TestCase
      * @dataProvider constructDataProvider
      *
      * @param $expectedFsp
+     * @param $expectedPc
      * @param $expectedLogger
      * @param $fsp
+     * @param $pc
      * @param null|LoggerInterface $logger
      *
      * @throws
      */
-    public function testConstruct($expectedFsp, $expectedLogger, $fsp, $logger = null)
+    public function testConstruct($expectedFsp, $expectedPc, $expectedLogger, $fsp, $pc, $logger = null)
     {
         // Given
-        $resolverUnderTest = null === $logger ? new FileResolver($fsp) : new FileResolver($fsp, $logger);
+        $resolverUnderTest = null === $logger ? new FileResolver($fsp, $pc) : new FileResolver($fsp, $pc, $logger);
 
         // When
         $actualFsp = Reflection::getPropertyValue($resolverUnderTest, 'filesystemProvider');
