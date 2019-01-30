@@ -4,27 +4,43 @@ namespace PB\Bundle\SuluStorageBundle\Tests;
 
 use PB\Bundle\SuluStorageBundle\DependencyInjection\Compiler\StoragePass;
 use PB\Bundle\SuluStorageBundle\PBSuluStorageBundle;
+use PHPUnit\Framework\TestCase;
+use Prophecy\Argument;
+use Prophecy\Prophecy\ObjectProphecy;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\HttpKernel\Bundle\Bundle;
 
-class PBSuluStorageBundleTest extends AbstractTests
+/**
+ * @author Paweł Brzeziński <pawel.brzezinski@smartint.pl>
+ */
+class PBSuluStorageBundleTest extends TestCase
 {
-    public function testSubClassOfBundle()
+    /** @var ObjectProphecy|ContainerBuilder */
+    private $cbMock;
+
+    protected function setUp()
     {
-        $this->assertInstanceOf(Bundle::class, new PBSuluStorageBundle());
+        parent::setUp();
+
+        $this->cbMock = $this->prophesize(ContainerBuilder::class);
     }
 
-    public function testCompilerPassOnBuild()
+    protected function tearDown()
     {
-        $container = $this->getMockBuilder(ContainerBuilder::class)
-            ->disableOriginalConstructor()
-            ->setMethods(['addCompilerPass'])
-            ->getMock();
-        $container->expects($this->exactly(1))
-            ->method('addCompilerPass')
-            ->with($this->isInstanceOf(StoragePass::class));
+        parent::tearDown();
 
+        $this->cbMock = null;
+    }
+
+    public function testBuild()
+    {
+        // Given
         $bundle = new PBSuluStorageBundle();
-        $bundle->build($container);
+
+        // Mock ContainerBuilder::addCompilerPass()
+        $this->cbMock->addCompilerPass(Argument::type(StoragePass::class))->shouldBeCalledTimes(1);
+        // End
+
+        // When
+        $bundle->build($this->cbMock->reveal());
     }
 }

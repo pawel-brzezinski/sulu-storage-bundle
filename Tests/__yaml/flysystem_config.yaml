@@ -1,0 +1,5 @@
+pb_sulu_storage:
+    provider: flysystem
+    flysystem:
+        filesystem:
+            storage: test_storage

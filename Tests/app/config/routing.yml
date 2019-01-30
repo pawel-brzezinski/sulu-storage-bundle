@@ -1,5 +1,0 @@
-# Simple overwrite standard Sulu download path
-pb_sulu_storage.website.media.download:
-    type: rest
-    resource: "@BayardCategoryBundle/Resources/config/routing.yml"
-    prefix: /

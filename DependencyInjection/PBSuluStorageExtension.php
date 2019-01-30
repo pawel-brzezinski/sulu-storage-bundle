@@ -8,12 +8,12 @@ use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 use Symfony\Component\DependencyInjection\Loader;
 
 /**
- * This is the class that loads and manages your bundle configuration.
- *
- * @link http://symfony.com/doc/current/cookbook/bundles/extension.html
+ * @author Paweł Brzeziński <pawel.brzezinski@smartint.pl>
  */
 class PBSuluStorageExtension extends Extension
 {
+    const BUNDLE_CONFIG_PARAM = 'pb_sulu_storage.config';
+
     /**
      * {@inheritdoc}
      */
@@ -21,28 +21,10 @@ class PBSuluStorageExtension extends Extension
     {
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
-        $this->manageFilesystemsConfig($container, $config);
+
+        $container->setParameter(self::BUNDLE_CONFIG_PARAM, $config);
 
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
-        $loader->load('services.yml');
-    }
-
-    /**
-     * Manage filesystems config
-     *
-     * @param ContainerBuilder $container
-     * @param array $config
-     * @return $this
-     */
-    public function manageFilesystemsConfig(ContainerBuilder $container, array $config)
-    {
-        $container->setParameter('pb_sulu_storage.master', $config['master']);
-        $container->setParameter('pb_sulu_storage.format_cache', $config['format_cache']);
-
-        if (isset($config['replica'])) {
-            $container->setParameter('pb_sulu_storage.replica', $config['replica']);
-        }
-
-        return $this;
+        $loader->load('services.yaml');
     }
 }

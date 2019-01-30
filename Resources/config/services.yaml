@@ -1,0 +1,19 @@
+services:
+    #####################
+    # Flysystem plugins #
+    #####################
+    pb_sulu_storage.flysystem.local.content_path.plugin:
+        class: PB\Bundle\SuluStorageBundle\Flysystem\Plugin\ContentPath\LocalContentPathPlugin
+        public: false
+        lazy: true
+
+    ############
+    # Overlays #
+    ############
+    pb_sulu_storage.file.overlay:
+        class: PB\Component\Overlay\File\FileOverlay
+        public: false
+
+    pb_sulu_storage.math.overlay:
+        class: PB\Component\Overlay\Math\MathOverlay
+        public: false

@@ -2,229 +2,163 @@
 
 namespace PB\Bundle\SuluStorageBundle\DependencyInjection\Compiler;
 
-use League\Flysystem\FilesystemNotFoundException;
-use PB\Bundle\SuluStorageBundle\Exception\AliasNotFoundException;
-use PB\Bundle\SuluStorageBundle\FormatCache\PBFormatCache;
-use PB\Bundle\SuluStorageBundle\Manager\PBStorageManager;
-use PB\Bundle\SuluStorageBundle\Resolver\Exception\PathResolverNotDefinedException;
-use PB\Bundle\SuluStorageBundle\Storage\PBStorage;
+use PB\Bundle\SuluStorageBundle\DependencyInjection\PBSuluStorageExtension;
+use PB\Bundle\SuluStorageBundle\Flysystem\Exception\FilesystemNotFoundException;
+use PB\Bundle\SuluStorageBundle\Media\FormatCache\PBFormatCache;
+use PB\Bundle\SuluStorageBundle\Media\FormatManager\PBFormatManager;
+use PB\Bundle\SuluStorageBundle\Media\Resolver\FileResolver;
+use PB\Bundle\SuluStorageBundle\Media\Storage\PBStorage;
+use PB\Bundle\SuluStorageBundle\Provider\Filesystem\FlysystemProvider;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
 
 /**
- * Compiler pass to adapt Sulu storage implementation
+ * Sulu storage compiler pass.
  *
  * @author Paweł Brzeziński <pawel.brzezinski@smartint.pl>
  */
 class StoragePass implements CompilerPassInterface
 {
-    /**
-     * @var array
-     */
-    protected $masterConfig;
-
-    /**
-     * @var array
-     */
-    protected $replicaConfig;
-
-    /**
-     * @var array
-     */
-    protected $formatCacheConfig;
-
-    /**
-     * @var array
-     */
-    protected $pathResolvers = [];
-
-    /**
-     * @var array
-     */
-    protected $extUrlResolvers = [];
+    const FILE_OVERLAY_SERVICE_ID = 'pb_sulu_storage.file.overlay';
+    const FILE_RESOLVER_SERVICE_ID = 'pb_sulu_storage.file_resolver';
+    const FILESYSTEM_PROVIDER_SERVICE_ID = 'pb_sulu_storage.filesystem_provider';
+    const MATH_OVERLAY_SERVICE_ID = 'pb_sulu_storage.math.overlay';
+    const SULU_CONTENT_PATH_CLEANER_SERVICE_ID = 'sulu.content.path_cleaner';
+    const SULU_MEDIA_FORMAT_CACHE_SERVICE_ID = 'sulu_media.format_cache';
+    const SULU_MEDIA_FORMAT_MANAGER_SERVICE_ID = 'sulu_media.format_manager';
+    const SULU_MEDIA_STORAGE_SERVICE_ID = 'sulu_media.storage';
 
     /**
      * {@inheritdoc}
-     *
-     * @param ContainerBuilder $container
      */
     public function process(ContainerBuilder $container)
     {
-        if (!$container->hasParameter('pb_sulu_storage.master')) {
+        if (!$container->hasParameter(PBSuluStorageExtension::BUNDLE_CONFIG_PARAM)) {
             return;
         }
 
-        // Find storage config
-        $this->findStorageConfig($container, 'master');
-        $this->findStorageConfig($container, 'replica');
-        $this->findStorageConfig($container, 'formatCache', 'format_cache');
+        $config = $container->getParameter(PBSuluStorageExtension::BUNDLE_CONFIG_PARAM);
 
-        // Find path resolvers services
-        $this->findTaggedServices($container, 'pb_sulu_storage.path_resolver', 'pathResolvers');
-
-        // Find external url resolvers services
-        $this->findTaggedServices($container, 'pb_sulu_storage.external_url_resolver', 'extUrlResolvers');
-
-        // Set PBStorage format cache as Sulu Media Local Format Cache
-        $this->overloadSuluMediaFormatCache($container);
-
-        // Set PBStorage as Sulu Media Storage
-        $this->overloadSuluMediaStorage($container);
+        $this->defineFilesystemProviderService($container, $config);
+        $this->defineFileResolverService($container, $config);
+        $this->overloadSuluMediaStorage($container, $config);
+        $this->overloadSuluMediaFormatCache($container, $config);
+        $this->overloadSuluMediaFormatManager($container, $config);
     }
 
     /**
-     * Find storage config.
+     * Define filesystem provider service.
      *
      * @param ContainerBuilder $container
-     * @param string $type      master||replica
-     * @param string|null $key
+     * @param array $config
      *
-     * @return $this
+     * @throws FilesystemNotFoundException
      */
-    protected function findStorageConfig(ContainerBuilder $container, $type, $key = null)
+    private function defineFilesystemProviderService(ContainerBuilder $container, array $config)
     {
-        $key = $key !== null ? $key : $type;
+        $provider = $config['provider'];
 
-        if (!$container->hasParameter('pb_sulu_storage.' . $key)) {
-            return $this;
+        if ('flysystem' === $provider) {
+            $this->defineFlysystemFilesystemProviderService($container, $config);
+        }
+    }
+
+    /**
+     * Define Flysystem filesystem provider service.
+     *
+     * @param ContainerBuilder $container
+     * @param array $config
+     *
+     * @throws FilesystemNotFoundException
+     */
+    private function defineFlysystemFilesystemProviderService(ContainerBuilder $container, array $config)
+    {
+        $storageFsId = $config['flysystem']['filesystem']['storage'];
+
+        // If configured storage filesystem is not an alias to service create standard oneup flysystem service id
+        if (false === $container->has($storageFsId)) {
+            $storageFsId = sprintf('oneup_flysystem.%s_filesystem', $storageFsId);
         }
 
-        $configName = $type . 'Config';
-        $this->{$configName} = $container->getParameter('pb_sulu_storage.' . $key);
-
-        return $this;
-    }
-
-    /**
-     * Find tagged services.
-     *
-     * @param ContainerBuilder $container
-     * @param string $tag
-     * @param string $field
-     *
-     * @return $this
-     */
-    protected function findTaggedServices(ContainerBuilder $container, $tag, $field)
-    {
-        $taggedServices = $container->findTaggedServiceIds($tag);
-
-        foreach ($taggedServices as $id => $tags) {
-            foreach ($tags as $attributes) {
-                if (!isset($attributes['alias']) || !$attributes['alias']) {
-                    throw new AliasNotFoundException($tag);
-                }
-
-                $this->{$field}[$attributes['alias']] = $id;
-            }
+        if (false === $container->has($storageFsId)) {
+            throw new FilesystemNotFoundException($storageFsId);
         }
 
-        return $this;
+        $fspDef = new Definition(FlysystemProvider::class, [
+            new Reference($storageFsId),
+        ]);
+
+        $container->setDefinition(self::FILESYSTEM_PROVIDER_SERVICE_ID, $fspDef);
     }
 
     /**
-     * Overload sulu_media.format_cache service.
+     * Define file resolver service.
      *
      * @param ContainerBuilder $container
-     *
-     * @return $this
+     * @param array $config
      */
-    protected function overloadSuluMediaFormatCache(ContainerBuilder $container)
+    private function defineFileResolverService(ContainerBuilder $container, array $config)
     {
-        $storageDef = $container->getDefinition('sulu_media.format_cache');
-        $storageDef->setClass(PBFormatCache::class);
+        $frDef = new Definition(FileResolver::class, [
+            new Reference(self::FILESYSTEM_PROVIDER_SERVICE_ID),
+            new Reference(self::SULU_CONTENT_PATH_CLEANER_SERVICE_ID),
+            new Reference($config['logger']),
+        ]);
 
-        $storageManager = $this->generateStorageFilesystemManager($container, 'formatCache', 'format_cache');
+        $container->setDefinition(self::FILE_RESOLVER_SERVICE_ID, $frDef);
+    }
 
-        $storageDef->setArguments([
-            $storageManager,
+    /**
+     * Overload Sulu Media storage service.
+     *
+     * @param ContainerBuilder $container
+     * @param array $config
+     */
+    private function overloadSuluMediaStorage(ContainerBuilder $container, array $config)
+    {
+        $def = $container->getDefinition(self::SULU_MEDIA_STORAGE_SERVICE_ID);
+        $def->setClass(PBStorage::class)->setArguments([
+            new Reference(self::FILESYSTEM_PROVIDER_SERVICE_ID),
+            new Reference(self::FILE_RESOLVER_SERVICE_ID),
+            new Reference(self::FILE_OVERLAY_SERVICE_ID),
+            new Reference(self::MATH_OVERLAY_SERVICE_ID),
+            $config['segments'],
+            new Reference($config['logger'])
+        ]);
+    }
+
+    /**
+     * Overload Sulu Media format cache service.
+     *
+     * @param ContainerBuilder $container
+     * @param array $config
+     */
+    private function overloadSuluMediaFormatCache(ContainerBuilder $container, array $config)
+    {
+        $def = $container->getDefinition(self::SULU_MEDIA_FORMAT_CACHE_SERVICE_ID);
+        $def->setClass(PBFormatCache::class)->setArguments([
+            new Reference(self::FILESYSTEM_PROVIDER_SERVICE_ID),
+            new Reference(self::FILE_RESOLVER_SERVICE_ID),
+            $container->getParameter('sulu_media.format_cache.media_proxy_path'),
+            $config['segments'],
             $container->getParameter('sulu_media.image.formats'),
-            $container->getParameter('sulu_media.format_cache.media_proxy_path')
         ]);
-        $storageDef->addTag('sulu_media.format_cache', ['alias' => 'pb']);
-
-        return $this;
     }
 
     /**
-     * Overload sulu_media.storage service.
+     * Overload Sulu Media format manager service.
      *
      * @param ContainerBuilder $container
-     *
-     * @return $this
+     * @param array $config
      */
-    protected function overloadSuluMediaStorage(ContainerBuilder $container)
+    private function overloadSuluMediaFormatManager(ContainerBuilder $container, array $config)
     {
-        $storageDef = $container->getDefinition('sulu_media.storage');
-        $storageDef->setClass(PBStorage::class);
+        $def = $container->getDefinition(self::SULU_MEDIA_FORMAT_MANAGER_SERVICE_ID);
+        $args = $def->getArguments();
+        $args[] = new Reference($config['logger']);
 
-        $masterStorageManager = $this->generateStorageFilesystemManager($container, 'master');
-        $replicaStorageManager = $this->generateStorageFilesystemManager($container, 'replica');
-
-        $storageDef->setArguments([$masterStorageManager, $replicaStorageManager]);
-
-        return $this;
-    }
-
-    /**
-     * Generate storage filesystem manager.
-     *
-     * @param ContainerBuilder $container
-     * @param string $type
-     * @param null|string $key
-     *
-     * @return null|Definition
-     */
-    protected function generateStorageFilesystemManager(
-        ContainerBuilder $container,
-        $type = 'master',
-        $key = null
-    ) {
-        $key = $key !== null ? $key : $type;
-        $configName = $type . 'Config';
-
-        if (!is_array($this->{$configName})) {
-            return null;
-        }
-
-        $config = $this->{$configName};
-        $fsServiceName = 'oneup_flysystem.' . $config['filesystem'] . '_filesystem';
-
-        if (!$container->has($fsServiceName)) {
-            throw new FilesystemNotFoundException(sprintf('Filesystem with name "%s" not found.', $config['filesystem']));
-        }
-
-        $pathResolverName = $this->findServiceNameForFilesystem($config['type'], 'pathResolvers');
-
-        if (null === $pathResolverName) {
-            throw new PathResolverNotDefinedException($config['type']);
-        }
-
-        $extUrlResolverName = $this->findServiceNameForFilesystem($config['type'], 'extUrlResolvers');
-
-        $managerDef = new Definition(PBStorageManager::class, [
-            new Reference($fsServiceName),
-            new Reference($pathResolverName),
-            $extUrlResolverName ? new Reference($extUrlResolverName) : null,
-            isset($config['segments']) ? $config['segments'] : null,
-        ]);
-
-        $container->setDefinition('pb_sulu_storage.' . $key . '.storage_manager', $managerDef);
-
-        return $managerDef;
-    }
-
-    /**
-     * Find service name for filesystem type.
-     *
-     * @param string $fsType
-     * @param string $field
-     *
-     * @return null|string
-     */
-    protected function findServiceNameForFilesystem($fsType, $field)
-    {
-        return isset($this->{$field}) && isset($this->{$field}[$fsType]) ? $this->{$field}[$fsType] : null;
+        $def->setClass(PBFormatManager::class)->setArguments($args);
     }
 }

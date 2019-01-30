@@ -1,0 +1,21 @@
+{
+    "timeout": 10,
+    "source": {
+        "directories": [
+            "."
+        ],
+        "excludes": [
+            "Resources",
+            "Tests",
+            "vendor"
+        ]
+    },
+    "logs": {
+        "text": "Tests\/infection\/infection-log.txt"
+    },
+    "mutators": {
+        "@default": true,
+        "IdenticalEqual": false,
+        "NotIdenticalNotEqual": false
+    }
+}

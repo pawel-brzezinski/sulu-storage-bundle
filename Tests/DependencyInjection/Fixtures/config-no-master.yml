@@ -1,4 +1,0 @@
-pb_sulu_storage:
-    format_cache:
-        type: local
-        filesystem: local_filesystem

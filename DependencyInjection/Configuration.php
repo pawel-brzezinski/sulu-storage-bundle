@@ -2,14 +2,11 @@
 
 namespace PB\Bundle\SuluStorageBundle\DependencyInjection;
 
-use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
 /**
- * This is the class that validates and merges configuration from your app/config files.
- *
- * To learn more see {@link http://symfony.com/doc/current/cookbook/bundles/configuration.html}
+ * @author Paweł Brzeziński <pawel.brzezinski@smartint.pl>
  */
 class Configuration implements ConfigurationInterface
 {
@@ -21,80 +18,50 @@ class Configuration implements ConfigurationInterface
         $treeBuilder = new TreeBuilder();
         $rootNode = $treeBuilder->root('pb_sulu_storage');
 
-        $this->setFilesystemConfiguration($rootNode);
-
-        return $treeBuilder;
-    }
-
-    /**
-     * Set filesystem configuration
-     *
-     * @param ArrayNodeDefinition $rootNode
-     *
-     * @return $this
-     */
-    public function setFilesystemConfiguration(ArrayNodeDefinition $rootNode)
-    {
         $rootNode
             ->children()
-                ->arrayNode('master')
-                    ->info('The master storage filesystem.')
+                ->enumNode('provider')
+                    ->info('Available providers: Flysystem')
+                    ->values(['flysystem'])
+                    ->isRequired()
+                ->end()
+                ->arrayNode('flysystem')
+                    ->info('Configuration for Flysystem provider')
                     ->children()
-                        ->scalarNode('type')
-                            ->isRequired()
-                            ->cannotBeEmpty()
-                        ->end()
-                        ->scalarNode('filesystem')
-                            ->isRequired()
-                            ->cannotBeEmpty()
-                        ->end()
-                        ->scalarNode('segments')
-                            ->cannotBeEmpty()
-                            ->defaultValue(10)
+                        ->arrayNode('filesystem')
+                            ->children()
+                                ->scalarNode('storage')
+                                    ->isRequired()
+                                    ->cannotBeEmpty()
+                                ->end()
+                                ->scalarNode('format_cache')
+                                    ->isRequired()
+                                    ->cannotBeEmpty()
+                                ->end()
+                            ->end()
                         ->end()
                     ->end()
                 ->end()
-                ->arrayNode('replica')
-                    ->info('The replication storage filesystem.')
-                    ->children()
-                        ->scalarNode('type')
-                            ->isRequired()
-                            ->cannotBeEmpty()
-                        ->end()
-                        ->scalarNode('filesystem')
-                            ->isRequired()
-                            ->cannotBeEmpty()
-                        ->end()
-                    ->end()
+                ->scalarNode('segments')
+                    ->cannotBeEmpty()
+                    ->defaultValue(10)
                 ->end()
-                ->arrayNode('format_cache')
-                    ->info('The media format cache storage filesystem.')
-                    ->children()
-                        ->scalarNode('type')
-                            ->isRequired()
-                            ->cannotBeEmpty()
-                        ->end()
-                        ->scalarNode('filesystem')
-                            ->isRequired()
-                            ->cannotBeEmpty()
-                        ->end()
-                    ->end()
+                ->scalarNode('logger')
+                    ->cannotBeEmpty()
+                    ->defaultValue('logger')
                 ->end()
             ->end()
             ->validate()
                 ->ifTrue(function($v) {
-                    return !isset($v['master']) || !isset($v['master']['filesystem']) || !$v['master']['filesystem'];
+                    $fsConfig = isset($v['flysystem']) ? $v['flysystem'] : null;
+                    $fsfConfig = isset($fsConfig['filesystem']) ? $fsConfig['filesystem'] : null;
+
+                    return 'flysystem' === $v['provider'] && null === $fsfConfig;
                 })
-                ->thenInvalid('Master storage filesystem must be defined.')
-            ->end()
-            ->validate()
-                ->ifTrue(function($v) {
-                    return !isset($v['format_cache']) || !isset($v['format_cache']['filesystem']) || !$v['format_cache']['filesystem'];
-                })
-                ->thenInvalid('Media format cache storage filesystem must be defined.')
+                ->thenInvalid('Flysystem configuration must be defined.')
             ->end()
         ;
 
-        return $this;
+        return $treeBuilder;
     }
 }
