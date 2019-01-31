@@ -1,0 +1,24 @@
+sudo: false
+
+language: php
+
+php:
+    - '5.6'
+    - '7.3'
+
+cache:
+    directories:
+        - $HOME/.composer/cache
+
+before_install:
+    - travis_retry composer selfupdate
+
+before_script:
+    - if [[ ${TRAVIS_PHP_VERSION:0:3} == "7.3" ]]; then wget https://github.com/infection/infection/releases/download/0.12.0/infection.phar; fi
+    - if [[ ${TRAVIS_PHP_VERSION:0:3} == "7.3" ]]; then wget https://github.com/infection/infection/releases/download/0.12.0/infection.phar.asc; fi
+    - if [[ ${TRAVIS_PHP_VERSION:0:3} == "7.3" ]]; then chmod +x infection.phar; fi
+    - COMPOSER_MEMORY_LIMIT=-1 travis_wait composer install --dev --prefer-source
+
+script:
+    - ./vendor/bin/phpunit
+    - if [[ ${TRAVIS_PHP_VERSION:0:3} == "7.3" ]]; then ./infection.phar --min-msi=95 --min-covered-msi=100 --threads=4; fi
