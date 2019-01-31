@@ -52,7 +52,7 @@ class Configuration implements ConfigurationInterface
                 ->end()
             ->end()
             ->validate()
-                ->ifTrue(function($v) {
+                ->ifTrue(function ($v) {
                     $fsConfig = isset($v['flysystem']) ? $v['flysystem'] : null;
                     $fsfConfig = isset($fsConfig['filesystem']) ? $fsConfig['filesystem'] : null;
 

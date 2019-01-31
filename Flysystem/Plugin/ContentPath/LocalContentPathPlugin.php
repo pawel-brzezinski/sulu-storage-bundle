@@ -3,7 +3,6 @@
 namespace PB\Bundle\SuluStorageBundle\Flysystem\Plugin\ContentPath;
 
 use League\Flysystem\Adapter\Local as LocalAdapter;
-use League\Flysystem\Cached\CachedAdapter;
 use PB\Bundle\SuluStorageBundle\Flysystem\Plugin\AbstractContentPathPlugin;
 
 /**

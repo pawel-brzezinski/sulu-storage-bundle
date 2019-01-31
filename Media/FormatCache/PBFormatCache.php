@@ -106,7 +106,8 @@ final class PBFormatCache extends LocalFormatCache implements FormatCacheInterfa
 
             try {
                 $this->filesystemProvider->delete($filePath);
-            } catch (\Exception $exception) {}
+            } catch (\Exception $exception) {
+            }
         }
 
         return true;
@@ -122,7 +123,8 @@ final class PBFormatCache extends LocalFormatCache implements FormatCacheInterfa
 
             try {
                 $this->filesystemProvider->deleteDir($path);
-            } catch (\Exception $exception) {}
+            } catch (\Exception $exception) {
+            }
         }
     }
 }

@@ -12,6 +12,7 @@ composer.lock
 .DS_Store
 
 # Tests
+/.php_cs.cache
 /infection.json
 /phpunit.xml
 /Tests/coverage

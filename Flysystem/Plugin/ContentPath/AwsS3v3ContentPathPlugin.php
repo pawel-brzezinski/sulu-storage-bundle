@@ -3,7 +3,6 @@
 namespace PB\Bundle\SuluStorageBundle\Flysystem\Plugin\ContentPath;
 
 use League\Flysystem\AwsS3v3\AwsS3Adapter;
-use League\Flysystem\Cached\CachedAdapter;
 use PB\Bundle\SuluStorageBundle\Flysystem\Plugin\AbstractContentPathPlugin;
 
 /**

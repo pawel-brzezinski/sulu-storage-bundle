@@ -11,5 +11,4 @@ use League\Flysystem\PluginInterface;
  */
 interface ContentPathPluginInterface extends PluginInterface
 {
-
 }

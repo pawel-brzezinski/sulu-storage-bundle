@@ -74,16 +74,16 @@ class StoragePassTest extends AbstractCompilerPassTestCase
         // Then
         $this->assertContainerBuilderHasServiceDefinitionWithArgument(StoragePass::FILESYSTEM_PROVIDER_SERVICE_ID, 0);
 
-        $this->assertContainerBuilderHasServiceDefinitionWithArgument(StoragePass::FILE_RESOLVER_SERVICE_ID,0);
-        $this->assertContainerBuilderHasServiceDefinitionWithArgument(StoragePass::FILE_RESOLVER_SERVICE_ID,1);
-        $this->assertContainerBuilderHasServiceDefinitionWithArgument(StoragePass::FILE_RESOLVER_SERVICE_ID,2);
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument(StoragePass::FILE_RESOLVER_SERVICE_ID, 0);
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument(StoragePass::FILE_RESOLVER_SERVICE_ID, 1);
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument(StoragePass::FILE_RESOLVER_SERVICE_ID, 2);
 
-        $this->assertContainerBuilderHasServiceDefinitionWithArgument(StoragePass::SULU_MEDIA_STORAGE_SERVICE_ID,0);
-        $this->assertContainerBuilderHasServiceDefinitionWithArgument(StoragePass::SULU_MEDIA_STORAGE_SERVICE_ID,1);
-        $this->assertContainerBuilderHasServiceDefinitionWithArgument(StoragePass::SULU_MEDIA_STORAGE_SERVICE_ID,2);
-        $this->assertContainerBuilderHasServiceDefinitionWithArgument(StoragePass::SULU_MEDIA_STORAGE_SERVICE_ID,3);
-        $this->assertContainerBuilderHasServiceDefinitionWithArgument(StoragePass::SULU_MEDIA_STORAGE_SERVICE_ID,4, 10);
-        $this->assertContainerBuilderHasServiceDefinitionWithArgument(StoragePass::SULU_MEDIA_STORAGE_SERVICE_ID,5);
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument(StoragePass::SULU_MEDIA_STORAGE_SERVICE_ID, 0);
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument(StoragePass::SULU_MEDIA_STORAGE_SERVICE_ID, 1);
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument(StoragePass::SULU_MEDIA_STORAGE_SERVICE_ID, 2);
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument(StoragePass::SULU_MEDIA_STORAGE_SERVICE_ID, 3);
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument(StoragePass::SULU_MEDIA_STORAGE_SERVICE_ID, 4, 10);
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument(StoragePass::SULU_MEDIA_STORAGE_SERVICE_ID, 5);
 
         $this->assertContainerBuilderHasServiceDefinitionWithArgument(StoragePass::SULU_MEDIA_FORMAT_CACHE_SERVICE_ID, 0);
         $this->assertContainerBuilderHasServiceDefinitionWithArgument(StoragePass::SULU_MEDIA_FORMAT_CACHE_SERVICE_ID, 1);

@@ -11,5 +11,4 @@ use PB\Bundle\SuluStorageBundle\Flysystem\Plugin\AbstractContentPathPlugin;
  */
 class FakeContentPathPlugin extends AbstractContentPathPlugin
 {
-
 }

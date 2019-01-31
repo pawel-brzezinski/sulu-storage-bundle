@@ -2,14 +2,8 @@
 
 namespace PB\Bundle\SuluStorageBundle\Controller;
 
-use PB\Bundle\SuluStorageBundle\DependencyInjection\Compiler\StoragePass;
-use PB\Bundle\SuluStorageBundle\Media\FormatCache\FormatCacheInterface;
-use PB\Component\Overlay\File\FileOverlay;
 use Sulu\Bundle\MediaBundle\Controller\MediaStreamController as SuluMediaStreamController;
 use Sulu\Bundle\MediaBundle\Entity\FileVersion;
-use Sulu\Bundle\MediaBundle\Entity\MediaRepositoryInterface;
-use Sulu\Bundle\MediaBundle\Media\Exception\MediaException;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 

@@ -11,5 +11,4 @@ use PB\Bundle\SuluStorageBundle\Config\AbstractConfig;
  */
 class FakeConfig extends AbstractConfig
 {
-
 }
