@@ -25,4 +25,5 @@ The installation description you will find [here](Resources/doc/index.md).
 ## Supported adapters
 - [Local adapter](Resources/doc/adapter/local_adapter.md)
 - [AwsS3v3 adapter](Resources/doc/adapter/awss3v3_adapter.md)
+- [Replicate adapter](Resources/doc/adapter/replicate_adapter.md)
 - [Custom adapter implementation](Resources/doc/adapter/custom_adapter.md)

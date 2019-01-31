@@ -108,4 +108,5 @@ That's all! You can now use your Flysystem filesystems storage.
 ## Supported adapters
 - [Local adapter](adapter/local_adapter.md)
 - [AwsS3v3 adapter](adapter/awss3v3_adapter.md)
+- [Replicate adapter](adapter/replicate_adapter.md)
 - [Custom adapter implementation](adapter/custom_adapter.md)
