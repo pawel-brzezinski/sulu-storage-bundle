@@ -20,9 +20,13 @@ before_script:
     - COMPOSER_MEMORY_LIMIT=-1 travis_wait composer install --dev --prefer-source
 
 script:
-    - ./vendor/bin/phpunit
+    - ./vendor/bin/phpunit --coverage-clover=coverage.xml
     - if [[ ${TRAVIS_PHP_VERSION:0:3} == "7.3" ]]; then ./infection.phar --min-msi=95 --min-covered-msi=100 --threads=4; fi
+
+after_success:
+    - bash <(curl -s https://codecov.io/bash)
 
 env:
     global:
         - secure: PosMRrT5nC9C7BrclZ0/6d0jLGmuolZNbb+SY0LfiXCMrmGavKs4S47mDuPNXnzeXOHPmFG2/zeL2axHjrMGUuj7ZFk4ueL5gZNdAM+bbQFyx9HAtv0IrMYkNF8diaRWT0cSK/3tQoRanXeKPw2i206JiHtFcPz+cZDnBW1iGRf5sWbMtu3y2RvQohK41BogK6PFl3ThbMbfDc6qIGWWxlofxRT4jcbOV/DmJeeuOI+7uzV3qSyjK7obI8d4clm3iPFqkMXBPn5Q6p1fv+/FLY2wkNl7CO0BQPRF4Jt+fHk9jBF5bigS5A92Od/pyzayQWFVIjUnCKWYjSBM+1EZxrS8vXR7dleFilkSgIcMAmiHnFloMZ80SV+sPfExAr7nksXAT/blIKpSgs0yC4Ib70fY8q57UaNzaRkoIjyxmBqKISrdCZIlPHcgqtc62eKLrhKbBL+iFphQRKFgtjz9Y5LU1hRlQf/AX3CwEkcfRFloW5/KK9o40IMnep6NQ3nke04+vM1bmJ4h3A7U5eQdeU9LqOx1Te9LD+0PiEAsaHhqTZYA18CSp4A79DCvFcCMqFNodpkglo40o/+lunj1N4Kajq0JB3sEdRnZNi6s8vKgggBjEqwqGzoi4XXYBKyLEm43yTc6fV+/eVuTzI7xCwjukbyHDb1obprY/qa6PP8=
+        - secure: f09Wm7LJ81s9HBPmwyw3j3P0Bpe9PZuz+gvS4SL7SFTlh+Fukd7IOrdl7wdMqmFa3wAXkk98+B5HmIU5BE15omcWg2mNge9JDJRsbvswltgK0TvJc0PciJBNyeNV3CLEUeBilpr6KkVuIgBIun8GeK3UUeftyXsTjwtFYV/gEV3A+0KcxXdsWlg3TymQjuboJHaZaxVzHEV5RHYpUIO3ch9EkPn16Bb077Uz3i8XNlVGUFsqi9Ej8zEXLeVocDY2q6InwZXS7WRcDMS2pKGtm2n+lzTkvfxEajrBKIxC8Uk4CNShedP1pBXK+gR7yGIyRSTLd51z+qKOTBTqVSQs5LRm+SdWR5FIOt8O1sweqz3I7nr74owoMyF/yVkQDIyysM9Tgw4blYjazUEtojau7f/5BgoxguLBG1UmMrw+M2PTYSuGukcDPUKCpknWnRsR+nLIOJyT/srmGoPNkhN22qSzJE+674UIrq0ChamJFYVK1hkyczBrmvblRZs8WOVeuV8vWWgYtlHZe16l+VlF5MeJiTT3vmm7USmwbrvEBy4FOVxkw2iFOFfKtUc30uwJ6xNn92T9mMNK+GCHIJfXe2b6qenWjUVP3ZDI1FZynN1eSaphgz1367ba90QQFjf0SdpSNDFMvonMskM35sVQYNGxDyUiz3Xpc1IEzrROUcg=
