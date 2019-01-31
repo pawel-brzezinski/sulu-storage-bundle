@@ -33,13 +33,7 @@ class LocalContentPathPlugin extends AbstractContentPathPlugin
      */
     public function handle($path, $host = null)
     {
-        $adapter = $this->adapter;
-
-        if ($adapter instanceof CachedAdapter) {
-            $adapter = $adapter->getAdapter();
-        }
-
-        $path = $adapter->applyPathPrefix($path);
+        $path = $this->adapter->applyPathPrefix($path);
 
         if (null !== $host) {
             $path = rtrim($host, '/').'/'.ltrim($path, '/');

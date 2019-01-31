@@ -8,6 +8,7 @@ use League\Flysystem\Cached\CachedAdapter;
 use League\Flysystem\Cached\CacheInterface;
 use League\Flysystem\Filesystem;
 use League\Flysystem\FilesystemInterface;
+use League\Flysystem\Replicate\ReplicateAdapter;
 use PB\Bundle\SuluStorageBundle\Flysystem\Exception\InvalidAdapterException;
 use PB\Bundle\SuluStorageBundle\Flysystem\Exception\InvalidFilesystemException;
 use PB\Bundle\SuluStorageBundle\Flysystem\Plugin\AbstractContentPathPlugin;
@@ -26,24 +27,30 @@ class AbstractContentPathPluginTest extends TestCase
         $cMock = $this->prophesize(CacheInterface::class);
 
         $nullAdapter = new NullAdapter();
+        $nullAdapter2 = new NullAdapter();
         $cachedAdapter = new CachedAdapter($nullAdapter, $cMock->reveal());
+        $replicaAdapter = new ReplicateAdapter($nullAdapter, $nullAdapter2);
+        $replicaCachedAdapter = new CachedAdapter($replicaAdapter, $cMock->reveal());
 
         return [
-            'non-cached adapter' => [$nullAdapter],
-            'cached adapter' => [$cachedAdapter],
+            'non-cached adapter' => [$nullAdapter, $nullAdapter],
+            'cached adapter' => [$nullAdapter, $cachedAdapter],
+            'replica adapter' => [$nullAdapter, $replicaAdapter],
+            'cached replica adapter' => [$nullAdapter, $replicaCachedAdapter],
         ];
     }
 
     /**
      * @dataProvider setFilesystemDataProvider
      *
+     * @param AdapterInterface $expectedAdapter
      * @param AdapterInterface $adapter
      *
      * @throws InvalidAdapterException
      * @throws InvalidFilesystemException
      * @throws \ReflectionException
      */
-    public function testSetFilesystem(AdapterInterface $adapter)
+    public function testSetFilesystem(AdapterInterface $expectedAdapter, AdapterInterface $adapter)
     {
         // Given
 
@@ -64,7 +71,7 @@ class AbstractContentPathPluginTest extends TestCase
 
         // Then
         $this->assertSame($fsMock->reveal(), $fsProp);
-        $this->assertSame($adapter, $adapterProp);
+        $this->assertSame($expectedAdapter, $adapterProp);
     }
 
     public function testShouldCallSetFilesystemAndThrowInvalidFilesystemException()

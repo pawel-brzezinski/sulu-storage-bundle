@@ -32,15 +32,9 @@ class AwsS3v3ContentPathPlugin extends AbstractContentPathPlugin
      */
     public function handle($path)
     {
-        $adapter = $this->adapter;
+        $path = $this->adapter->applyPathPrefix($path);
+        $bucket = $this->adapter->getBucket();
 
-        if ($adapter instanceof CachedAdapter) {
-            $adapter = $adapter->getAdapter();
-        }
-
-        $path = $adapter->applyPathPrefix($path);
-        $bucket = $adapter->getBucket();
-
-        return $adapter->getClient()->getObjectUrl($bucket, $path);
+        return $this->adapter->getClient()->getObjectUrl($bucket, $path);
     }
 }

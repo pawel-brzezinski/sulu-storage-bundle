@@ -7,7 +7,7 @@ use League\Flysystem\AdapterInterface;
 use League\Flysystem\Cached\CachedAdapter;
 use League\Flysystem\Filesystem;
 use League\Flysystem\FilesystemInterface;
-use League\Flysystem\PluginInterface;
+use League\Flysystem\Replicate\ReplicateAdapter;
 use PB\Bundle\SuluStorageBundle\Flysystem\Exception\InvalidAdapterException;
 use PB\Bundle\SuluStorageBundle\Flysystem\Exception\InvalidFilesystemException;
 
@@ -16,7 +16,7 @@ use PB\Bundle\SuluStorageBundle\Flysystem\Exception\InvalidFilesystemException;
  *
  * @author Paweł Brzeziński <pawel.brzezinski@smartint.pl>
  */
-abstract class AbstractContentPathPlugin implements PluginInterface
+abstract class AbstractContentPathPlugin implements ContentPathPluginInterface
 {
     const METHOD_NAME = 'getPathToFileContent';
 
@@ -48,7 +48,15 @@ abstract class AbstractContentPathPlugin implements PluginInterface
 
         $adapter = $filesystem->getAdapter();
 
-        if (!$adapter instanceof $this->supportedAdapter && !$adapter instanceof CachedAdapter) {
+        if ($adapter instanceof CachedAdapter) {
+            $adapter = $adapter->getAdapter();
+        }
+
+        if ($adapter instanceof ReplicateAdapter) {
+            $adapter = $adapter->getSourceAdapter();
+        }
+
+        if (!$adapter instanceof $this->supportedAdapter) {
             throw new InvalidAdapterException(get_class($adapter), $this->supportedAdapter);
         }
 

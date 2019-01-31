@@ -21,20 +21,7 @@ class AwsS3v3ContentPathPluginTest extends AbstractContentPathPluginTestCase
     /** @var ObjectProphecy|AwsS3Adapter */
     protected $adapterMock;
 
-    public function handleDataProvider()
-    {
-        return [
-            'use non-cached adapter' => [false],
-            'use cached adapter' => [true],
-        ];
-    }
-
-    /**
-     * @dataProvider handleDataProvider
-     *
-     * @param bool $useCachedAdapter
-     */
-    public function testHandle($useCachedAdapter = false)
+    public function testHandle()
     {
         // Given
         $path = '/foo/bar/example.jpg';
@@ -42,12 +29,6 @@ class AwsS3v3ContentPathPluginTest extends AbstractContentPathPluginTestCase
         $expectedPathWithPrefix = '/prefix/to/foo/bar/example.jpg';
         $expectedBucket = 'test-bucket';
         $expectedContentPath = 'https://example.com/test-bucet/prefix/to/foo/bar/example.jpg';
-
-        // Mock CachedAdapter::getAdapter()
-        if (true === $useCachedAdapter) {
-            $this->cachedAdapterMock->getAdapter()->shouldBeCalledTimes(1)->willReturn($this->adapterMock->reveal());
-        }
-        // End
 
         // Mock AwsS3Adapter::applyPathPrefix()
         $this->adapterMock->applyPathPrefix($path)->shouldBeCalledTimes(1)->willReturn($expectedPathWithPrefix);
@@ -68,7 +49,7 @@ class AwsS3v3ContentPathPluginTest extends AbstractContentPathPluginTestCase
         // End
 
         /** @var AwsS3v3ContentPathPlugin $pluginUnderTest */
-        $pluginUnderTest = $this->buildPlugin($useCachedAdapter);
+        $pluginUnderTest = $this->buildPlugin();
 
         // When
         $actual = $pluginUnderTest->handle($path);
