@@ -96,7 +96,7 @@ final class PBStorage implements StorageInterface
         }
 
         $segmentPath = '/'.$segment;
-        $fileName = $this->fileResolver->resolveUniqueFileName($segmentPath, $fileName);
+        $fileName = $this->fileResolver->resolveUniqueFileName($segmentPath, $fileName, 0);
         $filePath = $this->fileResolver->resolveFilePath($segmentPath, $fileName);
 
         $this->logger->debug(sprintf('Read file %s', $tempPath));

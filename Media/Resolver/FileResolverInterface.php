@@ -37,7 +37,7 @@ interface FileResolverInterface
      *
      * @return string
      */
-    public function resolveUniqueFileName($folder, $fileName, $counter = 0);
+    public function resolveUniqueFileName($folder, $fileName, $counter);
 
     /**
      * Resolve format file path.

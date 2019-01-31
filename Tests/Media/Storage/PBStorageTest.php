@@ -172,7 +172,7 @@ class PBStorageTest extends TestCase
         // End
 
         // Mock FileResolverInterface::resolveUniqueFileName()
-        $this->frMock->resolveUniqueFileName($expectedSegmentPath, $fileName)->shouldBeCalledTimes(1)->willReturn($expectedFileName);
+        $this->frMock->resolveUniqueFileName($expectedSegmentPath, $fileName, 0)->shouldBeCalledTimes(1)->willReturn($expectedFileName);
         // End
 
         // Mock FileResolverInterface::resolveFilePath()
@@ -243,7 +243,7 @@ class PBStorageTest extends TestCase
         // End
 
         // Mock FileResolverInterface::resolveUniqueFileName()
-        $this->frMock->resolveUniqueFileName($expectedSegmentPath, $fileName)->shouldBeCalledTimes(1)->willReturn($expectedFileName);
+        $this->frMock->resolveUniqueFileName($expectedSegmentPath, $fileName, 0)->shouldBeCalledTimes(1)->willReturn($expectedFileName);
         // End
 
         // Mock FileResolverInterface::resolveFilePath()

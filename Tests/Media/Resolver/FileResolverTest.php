@@ -181,7 +181,7 @@ class FileResolverTest extends TestCase
         // End
 
         // When
-        $actual = $this->buildResolver()->resolveUniqueFileName($folder, $fileName);
+        $actual = $this->buildResolver()->resolveUniqueFileName($folder, $fileName, 0);
 
         // Then
         $this->assertSame($expectedFileName, $actual);

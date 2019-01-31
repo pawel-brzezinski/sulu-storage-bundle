@@ -72,7 +72,7 @@ class FileResolver implements FileResolverInterface
     /**
      * {@inheritdoc}
      */
-    public function resolveUniqueFileName($folder, $fileName, $counter = 0)
+    public function resolveUniqueFileName($folder, $fileName, $counter)
     {
         $resolvedFileName = $fileName;
 
