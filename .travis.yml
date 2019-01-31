@@ -22,3 +22,7 @@ before_script:
 script:
     - ./vendor/bin/phpunit
     - if [[ ${TRAVIS_PHP_VERSION:0:3} == "7.3" ]]; then ./infection.phar --min-msi=95 --min-covered-msi=100 --threads=4; fi
+
+env:
+    global:
+        secure: RjUtlYhf1cQlaI/y2Jljtb+5rg5uvKrhY81kXgX/AF5jnaEb2Q+1uJTy9eOtDxHJIYM30mVrJiKcEvmKNNjaRvCd0e3O7Xj3PNXMF5Oz5CEeOR98PBU9MITsuXEqefGHP/6aV66Yc3E1kJm9+Zxz4t+gDjYrApH1W2bVx+9KIqrwSG5OAwj3n0WHfGYWKUYW1V5v99mf3d4est/0Uq8LBaaUzYhGURU/paM//kyN9SzzQl18OfgvGZsencF2gU8dPJbeS+8OApw/+pjyrI2tR+3Oq7dK6VvEE7TONwS1cBKBJt8QjTu6i8hBtGUIpCKDNDW4gyE2H8X4Sauvbbb/QUBbehp+oMGfDK1eLbbL7XZH6N1kTV2siBE8uYpCudTi9UMDRBZnaXbZt3lQgxtt1tRUbxx6b2fcT5VBN9ZVoCQfHyQh5bRabRuDEdMjC8kYpq51LLb06BpmRPwNEN/ncielXBVJGPrGL48JGyHB+bwONlf+ZcAzJRcu1ZKxOoNifEiANn1x+MlTfIv+aCM/uxBoPLBwgs87+VBDZj5020EQrJDrrQXEKUI07P//n8CZaA+Dp6Lu5aC4ZOUsiX6o1lN/Npfu9L4ufOQksUFhR2sJiUE/tdjTq9h4qLP6uvZ78BySR4JAw+6cWVuTrga700LSAwGUv7pLv0sRneCeaXY=

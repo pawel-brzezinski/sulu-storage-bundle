@@ -1,5 +1,7 @@
 # SuluStorageBundle
 
+[![Build Status](https://travis-ci.com/pawel-brzezinski/sulu-storage-bundle.svg?branch=master)](https://travis-ci.com/pawel-brzezinski/sulu-storage-bundle)
+
 This unofficial bundle for [Sulu CMF](https://github.com/sulu/sulu), provides possibility to use remote storage bundle (like AWS S3) for Sulu media files.
 SuluMediaBundle use [Flysystem](https://github.com/thephpleague/flysystem) filesystem abstraction in combination with [OneupFlysystemBundle](https://github.com/1up-lab/OneupFlysystemBundle).
 
