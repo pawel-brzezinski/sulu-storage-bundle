@@ -1,5 +1,6 @@
 sudo: false
 
+dist: bionic
 language: php
 
 php:
@@ -17,7 +18,7 @@ before_script:
     - if [[ ${TRAVIS_PHP_VERSION:0:3} == "7.3" ]]; then wget https://github.com/infection/infection/releases/download/0.12.0/infection.phar; fi
     - if [[ ${TRAVIS_PHP_VERSION:0:3} == "7.3" ]]; then wget https://github.com/infection/infection/releases/download/0.12.0/infection.phar.asc; fi
     - if [[ ${TRAVIS_PHP_VERSION:0:3} == "7.3" ]]; then chmod +x infection.phar; fi
-    - COMPOSER_MEMORY_LIMIT=-1 travis_wait composer install --dev --prefer-source
+    - COMPOSER_MEMORY_LIMIT=-1 travis_retry composer install --prefer-dist --no-interaction
 
 script:
     - ./vendor/bin/phpunit --coverage-clover=coverage.xml
