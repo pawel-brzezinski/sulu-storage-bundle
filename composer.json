@@ -34,6 +34,7 @@
         "nyholm/symfony-bundle-test": "^1.4",
         "league/flysystem-aws-s3-v3": "^1.0",
         "league/flysystem-cached-adapter": "^1.0",
-        "league/flysystem-replicate-adapter": "^1.0"
+        "league/flysystem-replicate-adapter": "^1.0",
+        "superbalist/flysystem-google-storage": "^7.2"
     }
 }
