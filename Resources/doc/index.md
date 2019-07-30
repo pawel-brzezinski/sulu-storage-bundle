@@ -11,11 +11,11 @@ composer require pawel-brzezinski/sulu-storage-bundle
 ```
 
 #### Step 2: Download necessary adapters
-Standard Flysystem package include only default adapters. Check below the adapters list which must be installed 
+Standard Flysystem package include only default adapters. Check below the adapters list which must be installed
 additionally if you want to use them:
   - The AwsS3v3 adapter `"league/flysystem-aws-s3-v3"`
   - The Cached adapter `"league/flysystem-cached-adapter"`
-  
+
 #### Step 3: Enable the bundle
 Add this bundle to `app/AbstractKernel.php`
 ```
@@ -30,7 +30,7 @@ oneup_flysystem:
         storage_cache:
             predis:
                 client: cache.redis
-                
+
     adapters:
         storage_local:
             local:
@@ -47,14 +47,14 @@ oneup_flysystem:
                 client: storage.s3_client
                 bucket: smartint
                 prefix: pb_storage
-    
+
     filesystems:
         media_storage:
             adapter: storage_awss3v3
             alias: custom_alias_to_media_storage
             cache: storage_cache
             plugins: ['pb_sulu_storage.flysystem.awss3v3.content_path.plugin']
-            
+
         format_storage:
             adapter: storage_local
             alias: custom_alias_to_format_storage
@@ -87,7 +87,7 @@ To enable this overwriting we have add this definition:
 pb_sulu_storage:
     resource: "@PBSuluStorageBundle/Resources/config/routing.yaml"
 ```
-to `app/config/website/routing.yml` (this file is included to admin routing). 
+to `app/config/website/routing.yml` (this file is included to admin routing).
 **Attention:** It is very important to add this **before** `sulu_media` definition. Finally it should looks like this:
 ```
 pb_sulu_storage:
@@ -95,7 +95,7 @@ pb_sulu_storage:
 
 sulu_media:
     resource: "@SuluMediaBundle/Resources/config/routing_website.yml"
-    
+
 ...
 ```
 
@@ -108,5 +108,6 @@ That's all! You can now use your Flysystem filesystems storage.
 ## Supported adapters
 - [Local adapter](adapter/local_adapter.md)
 - [AwsS3v3 adapter](adapter/awss3v3_adapter.md)
+- [Google Cloud Storage adapter](adapter/google_storage_adapter.md)
 - [Replicate adapter](adapter/replicate_adapter.md)
 - [Custom adapter implementation](adapter/custom_adapter.md)
