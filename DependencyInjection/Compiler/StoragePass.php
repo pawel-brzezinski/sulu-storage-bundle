@@ -22,8 +22,8 @@ use Symfony\Component\DependencyInjection\Reference;
 class StoragePass implements CompilerPassInterface
 {
     const FILE_OVERLAY_SERVICE_ID = 'pb_sulu_storage.file.overlay';
-    const STORAGE_FILE_RESOLVER_SERVICE_ID = 'pb_sulu_storage.storage_file_resolver';
-    const STORAGE_FILESYSTEM_PROVIDER_SERVICE_ID = 'pb_sulu_storage.storage_filesystem_provider';
+    const STORAGE_FILE_RESOLVER_SERVICE_ID = 'pb_sulu_storage.file_resolver';
+    const STORAGE_FILESYSTEM_PROVIDER_SERVICE_ID = 'pb_sulu_storage.filesystem_provider';
     const FORMAT_CACHE_FILE_RESOLVER_SERVICE_ID = 'pb_sulu_storage.format_cache_file_resolver';
     const FORMAT_CACHE_FILESYSTEM_PROVIDER_SERVICE_ID = 'pb_sulu_storage.format_cache_filesystem_provider';
     const MATH_OVERLAY_SERVICE_ID = 'pb_sulu_storage.math.overlay';
