@@ -1,6 +1,6 @@
 # SuluStorageBundle
 
-## Local adapter
+## AWS S3 adapter
 
 #### Filesystem configuration
 Define service with AWS S3 client instance. Example:
@@ -25,14 +25,14 @@ oneup_flysystem:
             awss3v3:
                 client: storage.s3_client
                 bucket: my_bucket
-                        
+
     filesystems:
         storage_awss3v3:
             adapter: storage_awss3v3
             alias: pb_storage_awss3v3
             plugins: ['pb_sulu_storage.flysystem.awss3v3.content_path.plugin']
 ```
-**Attention!** Do not forget to define content path plugin for adapter. Contant path plugin service id for Local adapter is `pb_sulu_storage.flysystem.awss3v3.content_path.plugin`.
+**Attention!** Do not forget to define content path plugin for adapter. Content path plugin service id for AWS S3 adapter is `pb_sulu_storage.flysystem.awss3v3.content_path.plugin`.
 
 For more information visit [OneupFlysystemBundle](https://github.com/1up-lab/OneupFlysystemBundle/blob/master/Resources/doc/adapter_awss3.md) documentation.
 

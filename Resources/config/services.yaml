@@ -12,6 +12,11 @@ services:
         public: false
         lazy: true
 
+    pb_sulu_storage.flysystem.google_storage.content_path.plugin:
+        class: PB\Bundle\SuluStorageBundle\Flysystem\Plugin\ContentPath\GoogleStorageContentPathPlugin
+        public: false
+        lazy: true
+
     ############
     # Overlays #
     ############
