@@ -22,8 +22,10 @@ use Symfony\Component\DependencyInjection\Reference;
 class StoragePass implements CompilerPassInterface
 {
     const FILE_OVERLAY_SERVICE_ID = 'pb_sulu_storage.file.overlay';
-    const FILE_RESOLVER_SERVICE_ID = 'pb_sulu_storage.file_resolver';
-    const FILESYSTEM_PROVIDER_SERVICE_ID = 'pb_sulu_storage.filesystem_provider';
+    const STORAGE_FILE_RESOLVER_SERVICE_ID = 'pb_sulu_storage.file_resolver';
+    const STORAGE_FILESYSTEM_PROVIDER_SERVICE_ID = 'pb_sulu_storage.filesystem_provider';
+    const FORMAT_CACHE_FILE_RESOLVER_SERVICE_ID = 'pb_sulu_storage.format_cache_file_resolver';
+    const FORMAT_CACHE_FILESYSTEM_PROVIDER_SERVICE_ID = 'pb_sulu_storage.format_cache_filesystem_provider';
     const MATH_OVERLAY_SERVICE_ID = 'pb_sulu_storage.math.overlay';
     const SULU_CONTENT_PATH_CLEANER_SERVICE_ID = 'sulu.content.path_cleaner';
     const SULU_MEDIA_FORMAT_CACHE_SERVICE_ID = 'sulu_media.format_cache';
@@ -42,7 +44,6 @@ class StoragePass implements CompilerPassInterface
         $config = $container->getParameter(PBSuluStorageExtension::BUNDLE_CONFIG_PARAM);
 
         $this->defineFilesystemProviderService($container, $config);
-        $this->defineFileResolverService($container, $config);
         $this->overloadSuluMediaStorage($container, $config);
         $this->overloadSuluMediaFormatCache($container, $config);
         $this->overloadSuluMediaFormatManager($container, $config);
@@ -61,7 +62,32 @@ class StoragePass implements CompilerPassInterface
         $provider = $config['provider'];
 
         if ('flysystem' === $provider) {
-            $this->defineFlysystemFilesystemProviderService($container, $config);
+            $storageFsId = $config['flysystem']['filesystem']['storage'];
+            $this->defineFlysystemFilesystemProviderService(
+                $container,
+                self::STORAGE_FILESYSTEM_PROVIDER_SERVICE_ID,
+                $storageFsId
+            );
+            $this->defineFileResolverService(
+                $container,
+                self::STORAGE_FILE_RESOLVER_SERVICE_ID,
+                self::STORAGE_FILESYSTEM_PROVIDER_SERVICE_ID,
+                $config['logger']
+            );
+
+            $formatCacheFsId = $config['flysystem']['filesystem']['format_cache'];
+            $this->defineFlysystemFilesystemProviderService(
+                $container,
+                self::FORMAT_CACHE_FILESYSTEM_PROVIDER_SERVICE_ID,
+                $formatCacheFsId
+            );
+            $this->defineFileResolverService(
+                $container,
+                self::FORMAT_CACHE_FILE_RESOLVER_SERVICE_ID,
+                self::FORMAT_CACHE_FILESYSTEM_PROVIDER_SERVICE_ID,
+                $config['logger']
+            );
+
         }
     }
 
@@ -69,45 +95,44 @@ class StoragePass implements CompilerPassInterface
      * Define Flysystem filesystem provider service.
      *
      * @param ContainerBuilder $container
-     * @param array $config
+     * @param string $id
+     * @param string $flysystemFilesystemId
      *
      * @throws FilesystemNotFoundException
      */
-    private function defineFlysystemFilesystemProviderService(ContainerBuilder $container, array $config)
-    {
-        $storageFsId = $config['flysystem']['filesystem']['storage'];
-
+    private function defineFlysystemFilesystemProviderService(ContainerBuilder $container, string $id, string $flysystemFilesystemId) {
         // If configured storage filesystem is not an alias to service create standard oneup flysystem service id
-        if (false === $container->has($storageFsId)) {
-            $storageFsId = sprintf('oneup_flysystem.%s_filesystem', $storageFsId);
+        if (false === $container->has($flysystemFilesystemId)) {
+            $flysystemFilesystemId = sprintf('oneup_flysystem.%s_filesystem', $flysystemFilesystemId);
         }
 
-        if (false === $container->has($storageFsId)) {
-            throw new FilesystemNotFoundException($storageFsId);
+        if (false === $container->has($flysystemFilesystemId)) {
+            throw new FilesystemNotFoundException($flysystemFilesystemId);
         }
 
         $fspDef = new Definition(FlysystemProvider::class, [
-            new Reference($storageFsId),
+            new Reference($flysystemFilesystemId),
         ]);
 
-        $container->setDefinition(self::FILESYSTEM_PROVIDER_SERVICE_ID, $fspDef);
+        $container->setDefinition($id, $fspDef);
     }
 
     /**
      * Define file resolver service.
      *
      * @param ContainerBuilder $container
-     * @param array $config
+     * @param string $id
+     * @param string $filesystemProviderId
      */
-    private function defineFileResolverService(ContainerBuilder $container, array $config)
+    private function defineFileResolverService(ContainerBuilder $container, string $id, string $filesystemProviderId, string $loggerId)
     {
         $frDef = new Definition(FileResolver::class, [
-            new Reference(self::FILESYSTEM_PROVIDER_SERVICE_ID),
+            new Reference($filesystemProviderId),
             new Reference(self::SULU_CONTENT_PATH_CLEANER_SERVICE_ID),
-            new Reference($config['logger']),
+            new Reference($loggerId),
         ]);
 
-        $container->setDefinition(self::FILE_RESOLVER_SERVICE_ID, $frDef);
+        $container->setDefinition($id, $frDef);
     }
 
     /**
@@ -120,8 +145,8 @@ class StoragePass implements CompilerPassInterface
     {
         $def = $container->getDefinition(self::SULU_MEDIA_STORAGE_SERVICE_ID);
         $def->setClass(PBStorage::class)->setArguments([
-            new Reference(self::FILESYSTEM_PROVIDER_SERVICE_ID),
-            new Reference(self::FILE_RESOLVER_SERVICE_ID),
+            new Reference(self::STORAGE_FILESYSTEM_PROVIDER_SERVICE_ID),
+            new Reference(self::STORAGE_FILE_RESOLVER_SERVICE_ID),
             new Reference(self::FILE_OVERLAY_SERVICE_ID),
             new Reference(self::MATH_OVERLAY_SERVICE_ID),
             $config['segments'],
@@ -139,8 +164,8 @@ class StoragePass implements CompilerPassInterface
     {
         $def = $container->getDefinition(self::SULU_MEDIA_FORMAT_CACHE_SERVICE_ID);
         $def->setClass(PBFormatCache::class)->setArguments([
-            new Reference(self::FILESYSTEM_PROVIDER_SERVICE_ID),
-            new Reference(self::FILE_RESOLVER_SERVICE_ID),
+            new Reference(self::FORMAT_CACHE_FILESYSTEM_PROVIDER_SERVICE_ID),
+            new Reference(self::FORMAT_CACHE_FILE_RESOLVER_SERVICE_ID),
             $container->getParameter('sulu_media.format_cache.media_proxy_path'),
             $config['segments'],
             $container->getParameter('sulu_media.image.formats'),

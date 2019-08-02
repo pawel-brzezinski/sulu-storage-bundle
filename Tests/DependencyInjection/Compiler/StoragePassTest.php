@@ -72,11 +72,17 @@ class StoragePassTest extends AbstractCompilerPassTestCase
         $this->compile();
 
         // Then
-        $this->assertContainerBuilderHasServiceDefinitionWithArgument(StoragePass::FILESYSTEM_PROVIDER_SERVICE_ID, 0);
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument(StoragePass::STORAGE_FILESYSTEM_PROVIDER_SERVICE_ID, 0);
 
-        $this->assertContainerBuilderHasServiceDefinitionWithArgument(StoragePass::FILE_RESOLVER_SERVICE_ID, 0);
-        $this->assertContainerBuilderHasServiceDefinitionWithArgument(StoragePass::FILE_RESOLVER_SERVICE_ID, 1);
-        $this->assertContainerBuilderHasServiceDefinitionWithArgument(StoragePass::FILE_RESOLVER_SERVICE_ID, 2);
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument(StoragePass::STORAGE_FILE_RESOLVER_SERVICE_ID, 0);
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument(StoragePass::STORAGE_FILE_RESOLVER_SERVICE_ID, 1);
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument(StoragePass::STORAGE_FILE_RESOLVER_SERVICE_ID, 2);
+
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument(StoragePass::FORMAT_CACHE_FILESYSTEM_PROVIDER_SERVICE_ID, 0);
+
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument(StoragePass::FORMAT_CACHE_FILE_RESOLVER_SERVICE_ID, 0);
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument(StoragePass::FORMAT_CACHE_FILE_RESOLVER_SERVICE_ID, 1);
+        $this->assertContainerBuilderHasServiceDefinitionWithArgument(StoragePass::FORMAT_CACHE_FILE_RESOLVER_SERVICE_ID, 2);
 
         $this->assertContainerBuilderHasServiceDefinitionWithArgument(StoragePass::SULU_MEDIA_STORAGE_SERVICE_ID, 0);
         $this->assertContainerBuilderHasServiceDefinitionWithArgument(StoragePass::SULU_MEDIA_STORAGE_SERVICE_ID, 1);
